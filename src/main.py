@@ -23,15 +23,8 @@ class Api:
         self.index_manager = IndexManager(papers_dir)
 
     def _get_papers_dir(self):
-        if getattr(sys, 'frozen', False):
-            base_dir = os.path.dirname(sys.executable)
-        else:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            
-        papers_dir = os.path.join(base_dir, 'papers')
-        if not os.path.exists(papers_dir):
-            os.makedirs(papers_dir, exist_ok=True)
-        return papers_dir
+        from config import get_library_path
+        return get_library_path()
 
     def set_window(self, window):
         self._window = window
@@ -158,6 +151,27 @@ class Api:
             
         return {"success": True, "papers": papers}
         
+    def change_library_folder(self):
+        if not self._window:
+            return {"success": False, "error": "Window not initialized"}
+            
+        result = self._window.create_file_dialog(webview.FOLDER_DIALOG, allow_multiple=False)
+        if result and len(result) > 0:
+            new_folder = result[0]
+            
+            from config import set_library_path
+            success = set_library_path(new_folder)
+            
+            if success:
+                # Re-initialize index manager to scan new folder
+                from index_manager import IndexManager
+                self.index_manager = IndexManager(new_folder)
+                self.current_pdf_path = None # clear any open pdf
+                return {"success": True, "new_path": new_folder}
+            else:
+                return {"success": False, "error": "Failed to save new configuration"}
+                
+        return {"success": False, "error": "Cancelled"}
     def open_specific_pdf(self, file_path):
         import os, base64
         import traceback

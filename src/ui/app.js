@@ -74,6 +74,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const folderBtn = document.getElementById('change-folder-btn');
+    folderBtn.addEventListener('click', async () => {
+        if (window.pywebview) {
+            try {
+                const response = await window.pywebview.api.change_library_folder();
+                if (response && response.success) {
+                    // Reset UI
+                    document.getElementById('pages-container').innerHTML = '';
+                    document.getElementById('placeholder-msg').style.display = 'block';
+                    document.getElementById('refs-container') ? document.getElementById('refs-container').style.display = 'none' : null;
+                    document.getElementById('right-sidebar').style.display = 'none';
+                    pdfDoc = null;
+                    currentFilePath = null;
+                    historyStack = [];
+                    updateBackButton();
+                    lastPapersJson = ""; // force sidebar reload
+
+                    alert(`Library folder changed to:\n${response.new_path}`);
+                    await loadLocalPapers();
+                }
+            } catch (err) {
+                console.error("Change folder failed:", err);
+            }
+        }
+    });
+
     const backBtn = document.getElementById('back-btn');
     backBtn.addEventListener('click', () => {
         if (historyStack.length > 0) {

@@ -178,10 +178,11 @@ class IndexManager:
             for i in range(start_page, len(doc)):
                 text_from_back += doc[i].get_text()
                 
-            ref_match = re.search(r'\n(References|REFERENCES|Bibliography)\n(.*)', text_from_back, re.DOTALL)
+            ref_match = re.search(r'\n(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\n(.*)', text_from_back, re.DOTALL)
             if ref_match:
                 ref_text = ref_match.group(2)
-                raw_refs = re.split(r'\n\[[0-9]+\]|\n[0-9]+\.', ref_text)
+                # Split by [number], number., or number) capturing erratic spaces
+                raw_refs = re.split(r'\n\s*\[[0-9]+\]\s*|\n\s*[0-9]+\.\s*|\n\s*[0-9]+\)\s*', ref_text)
                 clean_refs = []
                 for r in raw_refs:
                     r = r.strip().replace('\n', ' ')
