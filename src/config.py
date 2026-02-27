@@ -2,13 +2,15 @@ import os
 import sys
 import json
 
-def get_config_path():
+def _get_base_dir():
     if getattr(sys, 'frozen', False):
-        base_dir = os.path.dirname(sys.executable)
+        return os.path.dirname(sys.executable)
     else:
-        # If running from src/, config should go to the project root
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_dir, 'config.json')
+        # If running from src/, project root is one level up
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def get_config_path():
+    return os.path.join(_get_base_dir(), 'config.json')
 
 def load_config():
     path = get_config_path()
@@ -39,10 +41,7 @@ def get_library_path():
         return lib_path
         
     # Default fallback
-    if getattr(sys, 'frozen', False):
-        base_dir = os.path.dirname(sys.executable)
-    else:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = _get_base_dir()
         
     papers_dir = os.path.join(base_dir, 'papers')
     if not os.path.exists(papers_dir):

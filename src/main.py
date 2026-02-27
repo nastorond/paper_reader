@@ -231,12 +231,7 @@ class Api:
         import sys
         
         # Get list of local papers
-        if getattr(sys, 'frozen', False):
-            base_dir = os.path.dirname(sys.executable)
-        else:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            
-        papers_dir = os.path.join(base_dir, 'papers')
+        papers_dir = self._get_papers_dir()
         local_papers = []
         if os.path.exists(papers_dir):
             for file in os.listdir(papers_dir):
