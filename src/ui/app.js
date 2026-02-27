@@ -74,6 +74,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const folderBtn = document.getElementById('change-folder-btn');
+    folderBtn.addEventListener('click', async () => {
+        if (window.pywebview) {
+            try {
+                const response = await window.pywebview.api.change_library_folder();
+                if (response && response.success) {
+                    // Reset UI
+                    document.getElementById('pages-container').innerHTML = '';
+                    document.getElementById('placeholder-msg').style.display = 'block';
+                    document.getElementById('refs-container') ? document.getElementById('refs-container').style.display = 'none' : null;
+                    document.getElementById('right-sidebar').style.display = 'none';
+                    pdfDoc = null;
+                    currentFilePath = null;
+                    historyStack = [];
+                    updateBackButton();
+                    lastPapersJson = ""; // force sidebar reload
+
+                    alert(`Library folder changed to:\n${response.new_path}`);
+                    await loadLocalPapers();
+                }
+            } catch (err) {
+                console.error("Change folder failed:", err);
+            }
+        }
+    });
+
     const backBtn = document.getElementById('back-btn');
     backBtn.addEventListener('click', () => {
         if (historyStack.length > 0) {
@@ -216,28 +242,35 @@ async function loadLocalPapers() {
 
             response.papers.forEach((p, idx) => {
                 const li = document.createElement('li');
-                // Display rich metadata
-                const titleHtml = p.title !== p.filename ? `<strong>${p.title}</strong><br>` : `<strong>${p.filename}</strong><br>`;
-                const authorHtml = p.authors ? `<span style="font-size: 0.75rem; color: #64748b">${p.authors} ${p.year ? `(${p.year})` : ''}</span><br>` : '';
 
-                // Connection badge based on network
-                let badgesHtml = '';
-                if (p.cites_count > 0 || p.cited_by_count > 0) {
-                    badgesHtml = `<span style="font-size: 0.7rem; background: #e0f2fe; color: #0284c7; padding: 2px 4px; border-radius: 4px; margin-right: 4px;">🔗 ${p.cites_count + p.cited_by_count} Links</span>`;
+                if (p.status === 'indexing') {
+                    li.style.opacity = '0.6';
+                    li.style.pointerEvents = 'none';
+                    li.innerHTML = `<strong>${p.filename}</strong><br><span style="font-size: 0.8rem; color: #f59e0b;">⏳ 분석 중 (Indexing...)</span>`;
+                } else {
+                    // Display rich metadata
+                    const titleHtml = p.title !== p.filename ? `<strong>${p.title}</strong><br>` : `<strong>${p.filename}</strong><br>`;
+                    const authorHtml = p.authors ? `<span style="font-size: 0.75rem; color: #64748b">${p.authors} ${p.year ? `(${p.year})` : ''}</span><br>` : '';
+
+                    // Connection badge based on network
+                    let badgesHtml = '';
+                    if (p.cites_count > 0 || p.cited_by_count > 0) {
+                        badgesHtml = `<span style="font-size: 0.7rem; background: #e0f2fe; color: #0284c7; padding: 2px 4px; border-radius: 4px; margin-right: 4px;">🔗 ${p.cites_count + p.cited_by_count} Links</span>`;
+                    }
+                    if (p.memos_count > 0) {
+                        badgesHtml += `<span style="font-size: 0.7rem; background: #fef08a; color: #854d0e; padding: 2px 4px; border-radius: 4px;">📝 ${p.memos_count} Memos</span>`;
+                    }
+
+                    li.innerHTML = `${titleHtml}${authorHtml}<div style="margin-top:4px;">${badgesHtml}</div>`;
+
+                    li.addEventListener('click', () => {
+                        openPdf(p.filepath); // Routes through our history-aware method
+                    });
                 }
-                if (p.memos_count > 0) {
-                    badgesHtml += `<span style="font-size: 0.7rem; background: #fef08a; color: #854d0e; padding: 2px 4px; border-radius: 4px;">📝 ${p.memos_count} Memos</span>`;
-                }
-
-                li.innerHTML = `${titleHtml}${authorHtml}<div style="margin-top:4px;">${badgesHtml}</div>`;
-
-                li.addEventListener('click', () => {
-                    openPdf(p.filepath); // Routes through our history-aware method
-                });
 
                 list.appendChild(li);
 
-                if (idx === 0) {
+                if (idx === 0 && p.status !== 'indexing' && !firstPaperPath) {
                     firstPaperPath = p.filepath;
                 }
             });
@@ -350,34 +383,36 @@ function renderReferences(refs) {
                 }, 2000);
             };
 
-            const spans = document.querySelectorAll('.textLayer span');
+            const spans = Array.from(document.querySelectorAll('.textLayer span'));
+            const validSpans = spans.filter(s => s.textContent.trim().length > 0);
 
-            // First pass: exact match
-            for (let span of spans) {
-                if (span.innerText.trim() === searchText) {
-                    highlightSpan(span);
+            let fullText = "";
+            const spanMap = [];
+            validSpans.forEach(span => {
+                const start = fullText.length;
+                fullText += span.textContent;
+                spanMap.push({ span, start, end: fullText.length });
+            });
+
+            const indexStr = `${index + 1}`;
+            const escapedIndex = indexStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Check for [1], [ 1 ], [1,, or ,1]
+            const pattern = new RegExp(`\\[\\s*${escapedIndex}\\s*\\]|\\[\\s*${escapedIndex}\\s*,|,\\s*${escapedIndex}\\s*\\]|,\\s*${escapedIndex}\\s*,`, 'g');
+
+            let match;
+            while ((match = pattern.exec(fullText)) !== null) {
+                const matchIndex = match.index;
+                const targetSpanInfo = spanMap.find(info => matchIndex >= info.start && matchIndex < info.end);
+                if (targetSpanInfo) {
+                    highlightSpan(targetSpanInfo.span);
                     found = true;
                     break;
                 }
             }
 
-            // Second pass: remove spaces matching
             if (!found) {
-                for (let span of spans) {
-                    // removing inner spaces to match e.g. "[ 1 ]" -> "[1]"
-                    if (span.innerText.replace(/\s+/g, '') === searchText) {
-                        highlightSpan(span);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            // Third pass: just the number
-            if (!found) {
-                const justNum = `${index + 1}`;
-                for (let span of spans) {
-                    if (span.innerText.trim() === justNum || span.innerText.trim() === `[${justNum}`) {
+                for (let span of validSpans) {
+                    if (span.textContent.trim() === indexStr) {
                         highlightSpan(span);
                         found = true;
                         break;

@@ -47,6 +47,18 @@ class IndexManager:
                         # Use filename as unique key for simplicity in our local library
                         if filename not in self.index_data:
                             print(f"New PDF detected: {filename}. Starting indexing...")
+                            # 1. Immediately inject a placeholder so UI knows it is processing
+                            self.index_data[filename] = {
+                                "filename": filename,
+                                "filepath": filepath,
+                                "title": filename, # Temporary title
+                                "authors": [],
+                                "year": "",
+                                "status": "indexing",
+                                "cites": [],
+                                "cited_by": []
+                            }
+                            # 2. Block and do the heavy lifting
                             self._index_paper(filepath, filename)
             
             # Re-evaluate network connections every cycle
@@ -66,6 +78,7 @@ class IndexManager:
             "authors": [],
             "abstract": "",
             "year": "",
+            "status": "indexing",
             "semantic_scholar_id": None,
             "references": [], # the raw strings or dicts from the paper
             "cites": [],      # indices of local papers this paper cites
@@ -90,6 +103,7 @@ class IndexManager:
             # Fallback to local parsing for references
             paper_entry["references"] = self._extract_references_local(filepath)
             
+        paper_entry["status"] = "ready"
         self.index_data[filename] = paper_entry
         self._save_index()
         print(f"Indexing complete for: {filename}")
@@ -98,18 +112,8 @@ class IndexManager:
         """Attempts to guess the title. Semantic scholar search is fuzzy so this doesn't need to be perfect."""
         # Clean filename first
         clean_name = os.path.splitext(filename)[0]
-        clean_name = re.sub(r'[-_]', ' ', clean_name)
-        
-        try:
-            doc = fitz.open(filepath)
-            if len(doc) > 0:
-                first_page = doc[0].get_text("text").split('\n')
-                # Often the first few non-empty lines are the title
-                lines = [line.strip() for line in first_page if line.strip()]
-                if len(lines) > 0 and len(lines[0]) > 10:
-                    return lines[0] # Very naive guess
-        except Exception:
-            pass
+        # Just use the filename. Parsing the first page is too unreliable for Korean theses
+        # and frequently corrupts the Semantic Scholar search query.
         return clean_name
 
     def _query_semantic_scholar_by_title(self, title):
@@ -174,20 +178,25 @@ class IndexManager:
         try:
             doc = fitz.open(pdf_path)
             text_from_back = ""
-            start_page = max(0, len(doc) - 5)
+            # Theses can have many appendix pages, so check the last 20 pages
+            start_page = max(0, len(doc) - 20)
             for i in range(start_page, len(doc)):
                 text_from_back += doc[i].get_text()
                 
-            ref_match = re.search(r'\n(References|REFERENCES|Bibliography)\n(.*)', text_from_back, re.DOTALL)
-            if ref_match:
-                ref_text = ref_match.group(2)
-                raw_refs = re.split(r'\n\[[0-9]+\]|\n[0-9]+\.', ref_text)
+            # Relaxed regex to allow matching even if it's the very first string of the block
+            matches = list(re.finditer(r'(?:\n|^). {0,15}?(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
+            if matches:
+                ref_text = matches[-1].group(2)
+                ref_text = "\n" + ref_text.lstrip() # Guarantee standard delimiter behavior so list indexes align
+                # Split by [number], number., or number) capturing erratic spaces and newlines
+                raw_refs = re.split(r'\n\s*\[[0-9]+\]\s*\n|\n\s*\[[0-9]+\]\s*|\n\s*[0-9]+\.\s*|\n\s*[0-9]+\)\s*', ref_text)
                 clean_refs = []
                 for r in raw_refs:
                     r = r.strip().replace('\n', ' ')
+                    r = re.sub(r'\s+', ' ', r) # Clean erratic spacing
                     if len(r) > 10:
                         clean_refs.append({"text": r})
-                return clean_refs[:50]
+                return clean_refs[:80] # Increase limit since some theses have many refs
         except Exception:
             pass
         return []
@@ -249,6 +258,7 @@ class IndexManager:
                 "title": data.get("title", filename),
                 "authors": data.get("authors", []),
                 "year": data.get("year", ""),
+                "status": data.get("status", "ready"), # Default to ready for legacy entries
                 "cites_count": len(data.get("cites", [])),
                 "cited_by_count": len(data.get("cited_by", []))
             })
