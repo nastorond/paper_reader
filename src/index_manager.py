@@ -174,21 +174,24 @@ class IndexManager:
         try:
             doc = fitz.open(pdf_path)
             text_from_back = ""
-            start_page = max(0, len(doc) - 5)
+            # Theses can have many appendix pages, so check the last 20 pages
+            start_page = max(0, len(doc) - 20)
             for i in range(start_page, len(doc)):
                 text_from_back += doc[i].get_text()
                 
-            ref_match = re.search(r'\n(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\n(.*)', text_from_back, re.DOTALL)
-            if ref_match:
-                ref_text = ref_match.group(2)
-                # Split by [number], number., or number) capturing erratic spaces
-                raw_refs = re.split(r'\n\s*\[[0-9]+\]\s*|\n\s*[0-9]+\.\s*|\n\s*[0-9]+\)\s*', ref_text)
+            # Find all matches and take the last one to avoid Table of Contents
+            matches = list(re.finditer(r'\n. {0,10}(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
+            if matches:
+                ref_text = matches[-1].group(2)
+                # Split by [number], number., or number) capturing erratic spaces and newlines
+                raw_refs = re.split(r'\n\s*\[[0-9]+\]\s*\n|\n\s*\[[0-9]+\]\s*|\n\s*[0-9]+\.\s*|\n\s*[0-9]+\)\s*', ref_text)
                 clean_refs = []
                 for r in raw_refs:
                     r = r.strip().replace('\n', ' ')
+                    r = re.sub(r'\s+', ' ', r) # Clean erratic spacing
                     if len(r) > 10:
                         clean_refs.append({"text": r})
-                return clean_refs[:50]
+                return clean_refs[:80] # Increase limit since some theses have many refs
         except Exception:
             pass
         return []
