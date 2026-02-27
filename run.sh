@@ -12,4 +12,4 @@ else
 fi
 
 # Run the app
-python main.py
+python src/main.py
