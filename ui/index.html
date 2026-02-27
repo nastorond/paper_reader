@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portable Paper Reader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2">
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+</head>
+
+<body>
+    <div id="app">
+        <aside class="sidebar">
+            <h1 class="logo">📚 PaperReader</h1>
+
+            <div class="menu">
+                <button id="back-btn" class="menu-btn"
+                    style="margin-bottom: 10px; display: none; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">⬅️
+                    뒤로 가기 (Go Back)</button>
+                <button id="open-btn" class="menu-btn" style="margin-bottom: 20px;">📂 Open Any PDF</button>
+            </div>
+
+            <div class="memos-container papers-section">
+                <h3>주변 논문 (Local Library)</h3>
+                <ul id="papers-list">
+                    <li class="empty-state">Loading papers...</li>
+                </ul>
+            </div>
+
+            <div class="memos-container network-section" id="network-container" style="display: none;">
+                <h3>🌐 인용 네트워크</h3>
+                <div style="margin-top: 10px;">
+                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문을 인용함 (Cited By)</h4>
+                    <ul id="cited-by-list" style="margin-bottom: 15px;">
+                        <li class="empty-state">없음</li>
+                    </ul>
+
+                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문이 인용함 (Cites)</h4>
+                    <ul id="cites-list">
+                        <li class="empty-state">없음</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="memos-container memos-section">
+                <h3>My Memos</h3>
+                <ul id="memo-list">
+                    <li class="empty-state">No memos yet. Open a PDF to start!</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="viewer-container" id="viewer-scroll-container">
+            <div id="pdf-container">
+                <div class="placeholder" id="placeholder-msg">
+                    <h2>Drag & Drop a PDF here</h2>
+                    <p>or click "Open PDF" to start reading</p>
+                </div>
+
+                <!-- Continuous Scroll Pages will be appended here -->
+                <div id="pages-container"></div>
+            </div>
+        </main>
+
+        <aside class="right-sidebar" id="right-sidebar" style="display: none;">
+            <div class="memos-container refs-section"
+                style="height: 100%; border-top: none; padding-top: 0; margin-top: 0;">
+                <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                    References
+                    <span
+                        style="font-size: 0.7rem; font-weight: normal; color: var(--text-secondary); text-transform: none;">Click
+                        to find in text</span>
+                </h3>
+                <ul id="ref-list">
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Floating Action Bar -->
+        <div id="action-bar" class="action-bar" style="display: none;">
+            <button id="btn-highlight" class="action-btn">Highlight</button>
+            <button id="btn-cancel" class="action-btn cancel">Cancel</button>
+        </div>
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+
+</html>
