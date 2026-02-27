@@ -47,6 +47,18 @@ class IndexManager:
                         # Use filename as unique key for simplicity in our local library
                         if filename not in self.index_data:
                             print(f"New PDF detected: {filename}. Starting indexing...")
+                            # 1. Immediately inject a placeholder so UI knows it is processing
+                            self.index_data[filename] = {
+                                "filename": filename,
+                                "filepath": filepath,
+                                "title": filename, # Temporary title
+                                "authors": [],
+                                "year": "",
+                                "status": "indexing",
+                                "cites": [],
+                                "cited_by": []
+                            }
+                            # 2. Block and do the heavy lifting
                             self._index_paper(filepath, filename)
             
             # Re-evaluate network connections every cycle
@@ -66,6 +78,7 @@ class IndexManager:
             "authors": [],
             "abstract": "",
             "year": "",
+            "status": "indexing",
             "semantic_scholar_id": None,
             "references": [], # the raw strings or dicts from the paper
             "cites": [],      # indices of local papers this paper cites
@@ -90,6 +103,7 @@ class IndexManager:
             # Fallback to local parsing for references
             paper_entry["references"] = self._extract_references_local(filepath)
             
+        paper_entry["status"] = "ready"
         self.index_data[filename] = paper_entry
         self._save_index()
         print(f"Indexing complete for: {filename}")
@@ -244,6 +258,7 @@ class IndexManager:
                 "title": data.get("title", filename),
                 "authors": data.get("authors", []),
                 "year": data.get("year", ""),
+                "status": data.get("status", "ready"), # Default to ready for legacy entries
                 "cites_count": len(data.get("cites", [])),
                 "cited_by_count": len(data.get("cited_by", []))
             })

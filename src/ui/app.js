@@ -242,28 +242,35 @@ async function loadLocalPapers() {
 
             response.papers.forEach((p, idx) => {
                 const li = document.createElement('li');
-                // Display rich metadata
-                const titleHtml = p.title !== p.filename ? `<strong>${p.title}</strong><br>` : `<strong>${p.filename}</strong><br>`;
-                const authorHtml = p.authors ? `<span style="font-size: 0.75rem; color: #64748b">${p.authors} ${p.year ? `(${p.year})` : ''}</span><br>` : '';
 
-                // Connection badge based on network
-                let badgesHtml = '';
-                if (p.cites_count > 0 || p.cited_by_count > 0) {
-                    badgesHtml = `<span style="font-size: 0.7rem; background: #e0f2fe; color: #0284c7; padding: 2px 4px; border-radius: 4px; margin-right: 4px;">🔗 ${p.cites_count + p.cited_by_count} Links</span>`;
+                if (p.status === 'indexing') {
+                    li.style.opacity = '0.6';
+                    li.style.pointerEvents = 'none';
+                    li.innerHTML = `<strong>${p.filename}</strong><br><span style="font-size: 0.8rem; color: #f59e0b;">⏳ 분석 중 (Indexing...)</span>`;
+                } else {
+                    // Display rich metadata
+                    const titleHtml = p.title !== p.filename ? `<strong>${p.title}</strong><br>` : `<strong>${p.filename}</strong><br>`;
+                    const authorHtml = p.authors ? `<span style="font-size: 0.75rem; color: #64748b">${p.authors} ${p.year ? `(${p.year})` : ''}</span><br>` : '';
+
+                    // Connection badge based on network
+                    let badgesHtml = '';
+                    if (p.cites_count > 0 || p.cited_by_count > 0) {
+                        badgesHtml = `<span style="font-size: 0.7rem; background: #e0f2fe; color: #0284c7; padding: 2px 4px; border-radius: 4px; margin-right: 4px;">🔗 ${p.cites_count + p.cited_by_count} Links</span>`;
+                    }
+                    if (p.memos_count > 0) {
+                        badgesHtml += `<span style="font-size: 0.7rem; background: #fef08a; color: #854d0e; padding: 2px 4px; border-radius: 4px;">📝 ${p.memos_count} Memos</span>`;
+                    }
+
+                    li.innerHTML = `${titleHtml}${authorHtml}<div style="margin-top:4px;">${badgesHtml}</div>`;
+
+                    li.addEventListener('click', () => {
+                        openPdf(p.filepath); // Routes through our history-aware method
+                    });
                 }
-                if (p.memos_count > 0) {
-                    badgesHtml += `<span style="font-size: 0.7rem; background: #fef08a; color: #854d0e; padding: 2px 4px; border-radius: 4px;">📝 ${p.memos_count} Memos</span>`;
-                }
-
-                li.innerHTML = `${titleHtml}${authorHtml}<div style="margin-top:4px;">${badgesHtml}</div>`;
-
-                li.addEventListener('click', () => {
-                    openPdf(p.filepath); // Routes through our history-aware method
-                });
 
                 list.appendChild(li);
 
-                if (idx === 0) {
+                if (idx === 0 && p.status !== 'indexing' && !firstPaperPath) {
                     firstPaperPath = p.filepath;
                 }
             });
