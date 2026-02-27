@@ -378,32 +378,22 @@ function renderReferences(refs) {
 
             const spans = document.querySelectorAll('.textLayer span');
 
-            // First pass: exact match
+            // Improved heuristic to find references in textLayer using textContent and includes
             for (let span of spans) {
-                if (span.innerText.trim() === searchText) {
+                const text = span.textContent;
+                // Matches [1], [1, 2], [1-3], etc.
+                if (text.includes(searchText) || text.includes(`[${index + 1},`) || text.includes(`, ${index + 1}]`) || text.includes(`,${index + 1}]`) || text.includes(`[ ${index + 1} ]`)) {
                     highlightSpan(span);
                     found = true;
                     break;
                 }
             }
 
-            // Second pass: remove spaces matching
-            if (!found) {
-                for (let span of spans) {
-                    // removing inner spaces to match e.g. "[ 1 ]" -> "[1]"
-                    if (span.innerText.replace(/\s+/g, '') === searchText) {
-                        highlightSpan(span);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            // Third pass: just the number
+            // Fallback: If not found, sometimes the bracket and number are in different spans
             if (!found) {
                 const justNum = `${index + 1}`;
                 for (let span of spans) {
-                    if (span.innerText.trim() === justNum || span.innerText.trim() === `[${justNum}`) {
+                    if (span.textContent.trim() === justNum) {
                         highlightSpan(span);
                         found = true;
                         break;

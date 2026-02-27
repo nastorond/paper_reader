@@ -98,18 +98,8 @@ class IndexManager:
         """Attempts to guess the title. Semantic scholar search is fuzzy so this doesn't need to be perfect."""
         # Clean filename first
         clean_name = os.path.splitext(filename)[0]
-        clean_name = re.sub(r'[-_]', ' ', clean_name)
-        
-        try:
-            doc = fitz.open(filepath)
-            if len(doc) > 0:
-                first_page = doc[0].get_text("text").split('\n')
-                # Often the first few non-empty lines are the title
-                lines = [line.strip() for line in first_page if line.strip()]
-                if len(lines) > 0 and len(lines[0]) > 10:
-                    return lines[0] # Very naive guess
-        except Exception:
-            pass
+        # Just use the filename. Parsing the first page is too unreliable for Korean theses
+        # and frequently corrupts the Semantic Scholar search query.
         return clean_name
 
     def _query_semantic_scholar_by_title(self, title):
@@ -180,7 +170,8 @@ class IndexManager:
                 text_from_back += doc[i].get_text()
                 
             # Find all matches and take the last one to avoid Table of Contents
-            matches = list(re.finditer(r'\n. {0,10}(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
+            # Relaxed regex to allow matching even if it's the very first string of the block
+            matches = list(re.finditer(r'(?:\n|^). {0,15}?(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
             if matches:
                 ref_text = matches[-1].group(2)
                 # Split by [number], number., or number) capturing erratic spaces and newlines
