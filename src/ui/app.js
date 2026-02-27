@@ -383,24 +383,36 @@ function renderReferences(refs) {
                 }, 2000);
             };
 
-            const spans = document.querySelectorAll('.textLayer span');
+            const spans = Array.from(document.querySelectorAll('.textLayer span'));
+            const validSpans = spans.filter(s => s.textContent.trim().length > 0);
 
-            // Improved heuristic to find references in textLayer using textContent and includes
-            for (let span of spans) {
-                const text = span.textContent;
-                // Matches [1], [1, 2], [1-3], etc.
-                if (text.includes(searchText) || text.includes(`[${index + 1},`) || text.includes(`, ${index + 1}]`) || text.includes(`,${index + 1}]`) || text.includes(`[ ${index + 1} ]`)) {
-                    highlightSpan(span);
+            let fullText = "";
+            const spanMap = [];
+            validSpans.forEach(span => {
+                const start = fullText.length;
+                fullText += span.textContent;
+                spanMap.push({ span, start, end: fullText.length });
+            });
+
+            const indexStr = `${index + 1}`;
+            const escapedIndex = indexStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Check for [1], [ 1 ], [1,, or ,1]
+            const pattern = new RegExp(`\\[\\s*${escapedIndex}\\s*\\]|\\[\\s*${escapedIndex}\\s*,|,\\s*${escapedIndex}\\s*\\]|,\\s*${escapedIndex}\\s*,`, 'g');
+
+            let match;
+            while ((match = pattern.exec(fullText)) !== null) {
+                const matchIndex = match.index;
+                const targetSpanInfo = spanMap.find(info => matchIndex >= info.start && matchIndex < info.end);
+                if (targetSpanInfo) {
+                    highlightSpan(targetSpanInfo.span);
                     found = true;
                     break;
                 }
             }
 
-            // Fallback: If not found, sometimes the bracket and number are in different spans
             if (!found) {
-                const justNum = `${index + 1}`;
-                for (let span of spans) {
-                    if (span.textContent.trim() === justNum) {
+                for (let span of validSpans) {
+                    if (span.textContent.trim() === indexStr) {
                         highlightSpan(span);
                         found = true;
                         break;
