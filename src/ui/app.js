@@ -442,21 +442,7 @@ function renderReferences(refs) {
                 }
             }
 
-            // Try Strategy 2: Exact number match standalone
-            if (!found) {
-                for (let span of validSpans) {
-                    if (span.textContent.trim() === indexStr) {
-                        const spanIndex = fullText.indexOf(span.textContent);
-                        if (!isLikelyBibliography(spanIndex)) {
-                            highlightSpan(span, true);
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Try Strategy 3: Author-Year inference (for unnumbered citations like APA style)
+            // Try Strategy 2: Author-Year inference (for unnumbered citations like APA style)
             if (!found && r.text) {
                 // Try to extract the first word (likely the first author's last name)
                 const authorMatch = r.text.match(/^([A-Za-z\-]+)[,\s]/);
