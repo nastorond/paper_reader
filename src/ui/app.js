@@ -424,15 +424,21 @@ function renderReferences(refs) {
             let found = false;
             let match;
 
+            // Helper to check if a match is likely in the bibliography
+            // (A naive check: if it's in the last 15% of the document's total spans, it might be the bibliography)
+            const isLikelyBibliography = (matchIndex) => {
+                return matchIndex > fullText.length * 0.85;
+            };
+
             // Try Strategy 1: Explicit numbering pattern (e.g. [1])
             while ((match = pattern.exec(fullText)) !== null) {
                 const matchIndex = match.index;
                 const targetSpanInfo = spanMap.find(info => matchIndex >= info.start && matchIndex < info.end);
-                if (targetSpanInfo) {
-                    // Only scroll into view for the FIRST match found (!found resolves to true first time)
+
+                if (targetSpanInfo && !isLikelyBibliography(matchIndex)) {
+                    // Only scroll into view for the FIRST match found
                     highlightSpan(targetSpanInfo.span, !found);
                     found = true;
-                    // Keep highlighting all instances in text!
                 }
             }
 
@@ -440,21 +446,70 @@ function renderReferences(refs) {
             if (!found) {
                 for (let span of validSpans) {
                     if (span.textContent.trim() === indexStr) {
-                        highlightSpan(span);
-                        found = true;
-                        break;
+                        const spanIndex = fullText.indexOf(span.textContent);
+                        if (!isLikelyBibliography(spanIndex)) {
+                            highlightSpan(span, true);
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            // Try Strategy 3: Text snippet matching (First 15 chars of ref)
+            // Try Strategy 3: Author-Year inference (for unnumbered citations like APA style)
+            if (!found && r.text) {
+                // Try to extract the first word (likely the first author's last name)
+                const authorMatch = r.text.match(/^([A-Za-z\-]+)[,\s]/);
+                // Try to extract 4 digit year
+                const yearMatch = r.text.match(/\b(19|20)\d{2}\b/);
+
+                if (authorMatch && yearMatch) {
+                    const author = authorMatch[1].toLowerCase();
+                    const year = yearMatch[0];
+
+                    for (let span of validSpans) {
+                        const spanIndex = fullText.indexOf(span.textContent);
+                        if (!isLikelyBibliography(spanIndex)) {
+                            const textLower = span.textContent.toLowerCase();
+                            // If the span contains the author name, it's a strongly likely in-text citation
+                            if (textLower.includes(author)) {
+                                highlightSpan(span, !found);
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fallback: Just search for the author name if no year found
+            if (!found && r.text) {
+                const authorMatch = r.text.match(/^([A-Za-z\-]+)[,\s]/);
+                if (authorMatch) {
+                    const author = authorMatch[1].toLowerCase();
+                    if (author.length > 3) {
+                        for (let span of validSpans) {
+                            const spanIndex = fullText.indexOf(span.textContent);
+                            if (!isLikelyBibliography(spanIndex)) {
+                                if (span.textContent.toLowerCase().includes(author)) {
+                                    highlightSpan(span, !found);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (!found) {
+                // Last resort: if nothing is found in the main body, just find it anywhere (even bibliography)
                 const cleanRefSnippet = r.text.replace(/\[\d+\]|\d+\. /g, '').trim().substring(0, 15);
                 if (cleanRefSnippet.length > 5) {
                     const snippetLower = cleanRefSnippet.toLowerCase();
                     for (let span of validSpans) {
                         if (span.textContent.toLowerCase().includes(snippetLower)) {
-                            highlightSpan(span);
+                            highlightSpan(span, !found);
                             found = true;
                             break;
                         }
