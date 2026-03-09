@@ -100,6 +100,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const resetBtn = document.getElementById('reset-index-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+            if (window.pywebview) {
+                const confirmed = confirm("모든 논문의 인용 네트워크 데이터를 초기화하시겠습니까?\n(메모는 유지되며, 백그라운드에서 다시 네트워크 분석을 시작합니다.)");
+                if (confirmed) {
+                    try {
+                        const response = await window.pywebview.api.reset_index();
+                        if (response && response.success) {
+                            alert("초기화가 완료되었습니다. 다시 분석을 시작합니다.");
+                            lastPapersJson = ""; // force sidebar reload
+                            await loadLocalPapers();
+                        } else {
+                            alert("초기화 실패: " + (response.error || "알 수 없는 오류"));
+                        }
+                    } catch (err) {
+                        console.error("Reset index failed:", err);
+                    }
+                }
+            }
+        });
+    }
+
     const backBtn = document.getElementById('back-btn');
     backBtn.addEventListener('click', () => {
         if (historyStack.length > 0) {

@@ -184,7 +184,7 @@ class IndexManager:
                 text_from_back += doc[i].get_text()
                 
             # Relaxed regex to allow matching even if it's the very first string of the block
-            matches = list(re.finditer(r'(?:\n|^). {0,15}?(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
+            matches = list(re.finditer(r'(?:\n|^).{0,15}?(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
             if matches:
                 ref_text = matches[-1].group(2)
                 ref_text = "\n" + ref_text.lstrip() # Guarantee standard delimiter behavior so list indexes align

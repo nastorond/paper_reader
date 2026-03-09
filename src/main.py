@@ -172,6 +172,23 @@ class Api:
                 return {"success": False, "error": "Failed to save new configuration"}
                 
         return {"success": False, "error": "Cancelled"}
+        
+    def reset_index(self):
+        import os
+        try:
+            papers_dir = self._get_papers_dir()
+            index_file = os.path.join(papers_dir, "papers_index.json")
+            if os.path.exists(index_file):
+                os.remove(index_file)
+            
+            # Re-initialize index manager to start fresh
+            from index_manager import IndexManager
+            self.index_manager = IndexManager(papers_dir)
+            
+            return {"success": True}
+        except Exception as e:
+            print(f"Failed to reset index: {e}")
+            return {"success": False, "error": str(e)}
     def open_specific_pdf(self, file_path):
         import os, base64
         import traceback
