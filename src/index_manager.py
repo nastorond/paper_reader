@@ -188,8 +188,17 @@ class IndexManager:
             if matches:
                 ref_text = matches[-1].group(2)
                 ref_text = "\n" + ref_text.lstrip() # Guarantee standard delimiter behavior so list indexes align
-                # Split by [number], number., or number) capturing erratic spaces and newlines
+                
+                # Try splitting by [number], number., or number) capturing erratic spaces and newlines
                 raw_refs = re.split(r'\n\s*\[[0-9]+\]\s*\n|\n\s*\[[0-9]+\]\s*|\n\s*[0-9]+\.\s*|\n\s*[0-9]+\)\s*', ref_text)
+                
+                # Check if the split actually succeeded in finding multiple numbers
+                valid_raw = [r for r in raw_refs if len(r.strip()) > 10]
+                
+                # Fallback: if it's all clumped together (assumed unnumbered, separated by blank lines)
+                if len(valid_raw) <= 1:
+                    raw_refs = re.split(r'\n\s*\n', ref_text)
+                
                 clean_refs = []
                 for r in raw_refs:
                     r = r.strip().replace('\n', ' ')
