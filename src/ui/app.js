@@ -386,9 +386,6 @@ function renderReferences(refs) {
 
         // Clicking the reference in the sidebar searches for it in the text
         li.addEventListener('click', () => {
-            const searchText = `[${index + 1}]`;
-            let found = false;
-
             const highlightSpan = (span) => {
                 // Scroll the container to the span Element
                 span.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -422,17 +419,21 @@ function renderReferences(refs) {
             // Check for [1], [ 1 ], [1,, or ,1]
             const pattern = new RegExp(`\\[\\s*${escapedIndex}\\s*\\]|\\[\\s*${escapedIndex}\\s*,|,\\s*${escapedIndex}\\s*\\]|,\\s*${escapedIndex}\\s*,`, 'g');
 
+            let found = false;
             let match;
+
+            // Try Strategy 1: Explicit numbering pattern (e.g. [1])
             while ((match = pattern.exec(fullText)) !== null) {
                 const matchIndex = match.index;
                 const targetSpanInfo = spanMap.find(info => matchIndex >= info.start && matchIndex < info.end);
                 if (targetSpanInfo) {
                     highlightSpan(targetSpanInfo.span);
                     found = true;
-                    break;
+                    // Keep highlighting all instances in text!
                 }
             }
 
+            // Try Strategy 2: Exact number match standalone
             if (!found) {
                 for (let span of validSpans) {
                     if (span.textContent.trim() === indexStr) {
@@ -443,8 +444,23 @@ function renderReferences(refs) {
                 }
             }
 
+            // Try Strategy 3: Text snippet matching (First 15 chars of ref)
             if (!found) {
-                console.log("Could not find citation reference in text layer:", searchText);
+                const cleanRefSnippet = r.text.replace(/\[\d+\]|\d+\. /g, '').trim().substring(0, 15);
+                if (cleanRefSnippet.length > 5) {
+                    const snippetLower = cleanRefSnippet.toLowerCase();
+                    for (let span of validSpans) {
+                        if (span.textContent.toLowerCase().includes(snippetLower)) {
+                            highlightSpan(span);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!found) {
+                console.log("Could not find citation reference in text layer.");
             }
         });
 
