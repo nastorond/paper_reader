@@ -430,6 +430,12 @@ function renderReferences(refs) {
                 return matchIndex > fullText.length * 0.85;
             };
 
+            // Pre-filter spans that are not in the bibliography area
+            const safeSpans = validSpans.filter(span => {
+                const spanIndex = fullText.indexOf(span.textContent);
+                return !isLikelyBibliography(spanIndex);
+            });
+
             // Try Strategy 1: Explicit numbering pattern (e.g. [1])
             while ((match = pattern.exec(fullText)) !== null) {
                 const matchIndex = match.index;
@@ -449,16 +455,18 @@ function renderReferences(refs) {
                 // Try to extract 4 digit year
                 const yearMatch = r.text.match(/\b(19|20)\d{2}\b/);
 
-                if (authorMatch && yearMatch) {
+                if (authorMatch) {
                     const author = authorMatch[1].toLowerCase();
-                    const year = yearMatch[0];
+                    const year = yearMatch ? yearMatch[0] : null;
 
-                    for (let span of validSpans) {
-                        const spanIndex = fullText.indexOf(span.textContent);
-                        if (!isLikelyBibliography(spanIndex)) {
+                    if (author.length > 2) {
+                        for (let span of safeSpans) {
                             const textLower = span.textContent.toLowerCase();
-                            // If the span contains the author name, it's a strongly likely in-text citation
-                            if (textLower.includes(author)) {
+                            // If it has year, check both, otherwise just author
+                            const hasAuthor = textLower.includes(author);
+                            const hasYear = year ? textLower.includes(year) : true;
+
+                            if (hasAuthor && hasYear) {
                                 highlightSpan(span, !found);
                                 found = true;
                                 break;
@@ -468,32 +476,12 @@ function renderReferences(refs) {
                 }
             }
 
-            // Fallback: Just search for the author name if no year found
+            // Try Strategy 3: Text snippet matching BUT ONLY in safe spans (First 15 chars of ref)
             if (!found && r.text) {
-                const authorMatch = r.text.match(/^([A-Za-z\-]+)[,\s]/);
-                if (authorMatch) {
-                    const author = authorMatch[1].toLowerCase();
-                    if (author.length > 3) {
-                        for (let span of validSpans) {
-                            const spanIndex = fullText.indexOf(span.textContent);
-                            if (!isLikelyBibliography(spanIndex)) {
-                                if (span.textContent.toLowerCase().includes(author)) {
-                                    highlightSpan(span, !found);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!found) {
-                // Last resort: if nothing is found in the main body, just find it anywhere (even bibliography)
                 const cleanRefSnippet = r.text.replace(/\[\d+\]|\d+\. /g, '').trim().substring(0, 15);
                 if (cleanRefSnippet.length > 5) {
                     const snippetLower = cleanRefSnippet.toLowerCase();
-                    for (let span of validSpans) {
+                    for (let span of safeSpans) {
                         if (span.textContent.toLowerCase().includes(snippetLower)) {
                             highlightSpan(span, !found);
                             found = true;
@@ -504,7 +492,7 @@ function renderReferences(refs) {
             }
 
             if (!found) {
-                console.log("Could not find citation reference in text layer.");
+                console.log("Could not find citation reference outside of the bibliography section.");
             }
         });
 
