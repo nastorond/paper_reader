@@ -323,3 +323,190 @@ canvas {
     background: #ef4444;
     color: white;
 }
+
+/* =========================================================================
+   Network Tree UI (Citation Graph)
+   ========================================================================= */
+.network-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 10px;
+    /* Space for the central spine */
+    position: relative;
+}
+
+/* The vertical spine connecting everything */
+.network-tree::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 20px;
+    /* Center of the 20px node icon area */
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, #cbd5e1 15%, #cbd5e1 85%, transparent);
+    z-index: 1;
+}
+
+.network-branch {
+    width: 100%;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.branch-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    margin-left: 24px;
+    /* Push past the spine */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* Optional little dot */
+}
+
+.branch-label::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--accent);
+}
+
+/* Center Node (Current Paper) */
+.network-center-node {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #f8fafc;
+    border: 2px solid var(--accent);
+    border-radius: 20px;
+    margin: 10px 0 30px -4px;
+    /* Align with spine */
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.network-center-node .node-icon {
+    font-size: 1.2rem;
+    z-index: 2;
+}
+
+.network-center-node .node-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    z-index: 2;
+}
+
+/* Pulsing effect behind the center node icon */
+.pulse-ring {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    z-index: 1;
+    opacity: 0.2;
+    animation: pulseObj 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseObj {
+
+    0%,
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: translateY(-50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* The actual list of citations */
+.network-list {
+    margin-left: 24px;
+    /* Push past the spine */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Network Card Data */
+.network-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    position: relative;
+}
+
+/* The horizontal branch line connecting spine to card */
+.network-card::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    /* Reach back to the spine */
+    width: 20px;
+    height: 2px;
+    background-color: #cbd5e1;
+    z-index: -1;
+}
+
+.network-card:hover {
+    border-color: #94a3b8;
+    transform: translateX(4px);
+    /* Slight bump right */
+    box-shadow: var(--shadow-md);
+}
+
+.card-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+/* Emulating paper-list li hover for empty state */
+.network-list .empty-state {
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}

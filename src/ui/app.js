@@ -470,7 +470,6 @@ function renderNetworkLinks(indexData) {
 
     container.style.display = 'block';
 
-    // Abstracted helper to render list items
     const renderItems = (items, targetUl) => {
         if (items.length === 0) {
             targetUl.innerHTML = '<li class="empty-state">없음</li>';
@@ -479,24 +478,47 @@ function renderNetworkLinks(indexData) {
 
         items.forEach(filename => {
             const li = document.createElement('li');
-            li.style.marginBottom = '6px';
+            li.style.width = '100%';
 
-            // Try to find full data in lastPapersJson
             let title = filename;
             let filepath = filename;
+            let authors = "";
+            let year = "";
+            let linkCount = 0;
+
             try {
                 if (lastPapersJson) {
                     const allPapers = JSON.parse(lastPapersJson);
                     const match = allPapers.find(p => p.filename === filename);
                     if (match) {
-                        title = match.title;
+                        title = match.title !== match.filename ? match.title : match.filename;
                         filepath = match.filepath;
+                        authors = match.authors || "";
+                        year = match.year ? match.year : "";
+                        linkCount = (match.cites_count || 0) + (match.cited_by_count || 0);
                     }
                 }
             } catch (e) { }
 
-            li.innerHTML = `<button class="action-btn" style="width: 100%; text-align: left; padding: 6px; font-size: 0.8rem; background: #f8fafc; color: var(--text-color); border: 1px solid #e2e8f0;">📑 ${title}</button>`;
-            li.addEventListener('click', () => openPdf(filepath));
+            // Construct rich card
+            const btn = document.createElement('button');
+            btn.className = 'network-card';
+
+            let metaHtml = '';
+            if (authors || year) {
+                metaHtml += `<span style="font-weight:500;">${authors}</span> ${year ? `(${year})` : ''}`;
+            }
+            if (linkCount > 0) {
+                metaHtml += `<span style="margin-left:auto; background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:10px; font-weight:600;">🔗 ${linkCount}</span>`;
+            }
+
+            btn.innerHTML = `
+                <div class="card-title">${title}</div>
+                ${metaHtml ? `<div class="card-meta">${metaHtml}</div>` : ''}
+            `;
+
+            btn.addEventListener('click', () => openPdf(filepath));
+            li.appendChild(btn);
             targetUl.appendChild(li);
         });
     };
