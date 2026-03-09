@@ -386,9 +386,11 @@ function renderReferences(refs) {
 
         // Clicking the reference in the sidebar searches for it in the text
         li.addEventListener('click', () => {
-            const highlightSpan = (span) => {
-                // Scroll the container to the span Element
-                span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const highlightSpan = (span, shouldScroll = true) => {
+                if (shouldScroll) {
+                    // Scroll the container to the span Element
+                    span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
 
                 const originalBg = span.style.backgroundColor;
                 span.style.backgroundColor = 'rgba(250, 204, 21, 0.8)';
@@ -427,7 +429,8 @@ function renderReferences(refs) {
                 const matchIndex = match.index;
                 const targetSpanInfo = spanMap.find(info => matchIndex >= info.start && matchIndex < info.end);
                 if (targetSpanInfo) {
-                    highlightSpan(targetSpanInfo.span);
+                    // Only scroll into view for the FIRST match found (!found resolves to true first time)
+                    highlightSpan(targetSpanInfo.span, !found);
                     found = true;
                     // Keep highlighting all instances in text!
                 }
