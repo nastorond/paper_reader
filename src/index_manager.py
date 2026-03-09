@@ -177,11 +177,16 @@ class IndexManager:
         """Fallback local extraction (similar to old main.py logic)."""
         try:
             doc = fitz.open(pdf_path)
-            text_from_back = ""
+            text_blocks = []
             # Theses can have many appendix pages, so check the last 20 pages
             start_page = max(0, len(doc) - 20)
             for i in range(start_page, len(doc)):
-                text_from_back += doc[i].get_text()
+                page = doc[i]
+                blocks = page.get_text("blocks")
+                for b in blocks:
+                    text_blocks.append(b[4]) # index 4 is the actual text
+                    
+            text_from_back = "\n".join(text_blocks)
                 
             # Relaxed regex to allow matching even if it's the very first string of the block
             matches = list(re.finditer(r'(?:\n|^).{0,15}?(References|REFERENCES|Bibliography|참고문헌|참\s*고\s*문\s*헌)\s*\n(.*)', text_from_back, re.DOTALL))
