@@ -29,7 +29,8 @@
                 <button id="change-folder-btn" class="menu-btn"
                     style="margin-bottom: 5px; background-color: #64748b; font-size: 0.85rem;">📁 라이브러리 폴더 변경</button>
                 <button id="reset-index-btn" class="menu-btn"
-                    style="margin-bottom: 20px; background-color: #ef4444; font-size: 0.85rem;">⚠️ 데이터 초기화 (Reset)</button>
+                    style="margin-bottom: 20px; background-color: #ef4444; font-size: 0.85rem;">⚠️ 데이터 초기화
+                    (Reset)</button>
             </div>
 
             <div class="memos-container papers-section">
@@ -41,14 +42,16 @@
 
             <div class="memos-container network-section" id="network-container" style="display: none;">
                 <h3>🌐 인용 네트워크</h3>
-                <div style="margin-top: 10px;">
-                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문을 인용함 (Cited By)</h4>
-                    <ul id="cited-by-list" style="margin-bottom: 15px;">
+                <div style="margin-top: 15px;">
+                    <h4 style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">이 논문을 인용함 (Cited
+                        By)</h4>
+                    <ul id="cited-by-list" class="network-list">
                         <li class="empty-state">없음</li>
                     </ul>
 
-                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문이 인용함 (Cites)</h4>
-                    <ul id="cites-list">
+                    <h4 style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">이 논문이 인용함 (Cites)
+                    </h4>
+                    <ul id="cites-list" class="network-list">
                         <li class="empty-state">없음</li>
                     </ul>
                 </div>
