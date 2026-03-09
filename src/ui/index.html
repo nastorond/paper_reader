@@ -29,8 +29,7 @@
                 <button id="change-folder-btn" class="menu-btn"
                     style="margin-bottom: 5px; background-color: #64748b; font-size: 0.85rem;">📁 라이브러리 폴더 변경</button>
                 <button id="reset-index-btn" class="menu-btn"
-                    style="margin-bottom: 20px; background-color: #ef4444; font-size: 0.85rem;">⚠️ 데이터 초기화
-                    (Reset)</button>
+                    style="margin-bottom: 20px; background-color: #ef4444; font-size: 0.85rem;">⚠️ 데이터 초기화 (Reset)</button>
             </div>
 
             <div class="memos-container papers-section">
@@ -42,29 +41,16 @@
 
             <div class="memos-container network-section" id="network-container" style="display: none;">
                 <h3>🌐 인용 네트워크</h3>
-                <div class="network-tree" style="margin-top: 15px;">
-                    <!-- 'Cited By' Branch -->
-                    <div class="network-branch upper">
-                        <div class="branch-label">나를 인용함 (Cited By)</div>
-                        <ul id="cited-by-list" class="network-list">
-                            <li class="empty-state">없음</li>
-                        </ul>
-                    </div>
+                <div style="margin-top: 10px;">
+                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문을 인용함 (Cited By)</h4>
+                    <ul id="cited-by-list" style="margin-bottom: 15px;">
+                        <li class="empty-state">없음</li>
+                    </ul>
 
-                    <!-- 'Current Paper' Node Indicator -->
-                    <div class="network-center-node" title="현재 열려있는 논문입니다.">
-                        <div class="pulse-ring"></div>
-                        <span class="node-icon">📄</span>
-                        <div class="node-label">This Paper</div>
-                    </div>
-
-                    <!-- 'Cites' Branch -->
-                    <div class="network-branch lower">
-                        <div class="branch-label">내가 인용함 (Cites)</div>
-                        <ul id="cites-list" class="network-list">
-                            <li class="empty-state">없음</li>
-                        </ul>
-                    </div>
+                    <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;">이 논문이 인용함 (Cites)</h4>
+                    <ul id="cites-list">
+                        <li class="empty-state">없음</li>
+                    </ul>
                 </div>
             </div>
 
