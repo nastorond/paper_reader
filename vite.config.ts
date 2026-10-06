@@ -33,9 +33,29 @@ function copyPdfjsAssets(): Plugin {
   };
 }
 
+// 개발 전용: 웹뷰에서 POST /__devlog 로 보낸 로그를 터미널에 찍는다(src/dev/devLog.ts).
+// Tauri 웹뷰 콘솔은 터미널에 안 보여서, 오류·진단 정보를 확인하려고 둔다.
+function devLogEndpoint(): Plugin {
+  return {
+    name: "dev-log-endpoint",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/__devlog", (req, res) => {
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", () => {
+          console.log(`[webview] ${body}`);
+          res.statusCode = 204;
+          res.end();
+        });
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(() => ({
-  plugins: [react(), copyPdfjsAssets()],
+  plugins: [react(), copyPdfjsAssets(), devLogEndpoint()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

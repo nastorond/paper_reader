@@ -27,3 +27,6 @@ src-tauri/target/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# 개인 논문 PDF (테스트용으로 fixtures/에 두지만 저장소에는 올리지 않음)
+fixtures/KCI_FI003273433.pdf

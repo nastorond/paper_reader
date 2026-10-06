@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Toolbar } from "./Toolbar";
 import { PdfViewer, type PdfViewerHandle } from "./pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "./pdf/pdfjs";
-import { fitWidthScale, zoomIn, zoomOut } from "./pdf/zoom";
+import { clampZoom, fitWidthScale, zoomIn, zoomOut } from "./pdf/zoom";
 import { pickPdfPath, readPdfFile } from "./file/openPdf";
 import { useDropPdf } from "./file/useDropPdf";
 import "./App.css";
@@ -58,10 +58,22 @@ export default function App() {
   }, [openPath]);
 
   // 개발 편의: VITE_DEV_OPEN_PDF 가 있으면 시작 시 자동으로 연다(프로덕션 빌드에선 제거됨).
+  // StrictMode 는 개발 중 effect 를 두 번 실행하므로 한 번만 열도록 ref 로 막는다.
+  const devOpenedRef = useRef(false);
   useEffect(() => {
     const devPdf = import.meta.env.DEV ? import.meta.env.VITE_DEV_OPEN_PDF : undefined;
-    if (devPdf) void openPath(devPdf);
+    if (!devPdf || devOpenedRef.current) return;
+    devOpenedRef.current = true;
+    void openPath(devPdf);
   }, [openPath]);
+
+  useEffect(() => {
+    const raw = import.meta.env.DEV ? import.meta.env.VITE_DEV_ZOOM : undefined;
+    const devZoom = raw ? Number(raw) : NaN;
+    if (!doc || !Number.isFinite(devZoom)) return;
+    const t = setTimeout(() => setScale(clampZoom(devZoom)), 1500);
+    return () => clearTimeout(t);
+  }, [doc]);
 
   const dragging = useDropPdf((path) => void openPath(path));
 
