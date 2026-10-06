@@ -1,0 +1,194 @@
+# PaperBoard — 논문 문구별 노트 앱 (macOS 편집 + Android 보기 전용)
+
+## 이 프로젝트가 뭔지
+
+논문 PDF를 읽으면서 **특정 단어·문장마다 전용 노트(미니 화이트보드)**를 붙이고, 나중에 본문에서 그 문구를 **클릭하면 노트가 옆에 열리는** 개인용 맥 앱. 맥에서 만든 노트를 **Android 폰에서 읽기만** 할 수 있게 한다. 단어장을 두 번 만들지 않는 게 목적.
+
+- 사용자는 1명(나). 편집은 맥에서만, 폰은 **읽기 전용**. 계정·서버 없음.
+- 맥 → 폰 전달은 Google Drive에 파일 하나를 올려두는 방식(한 방향). 양방향 동기화·충돌 처리는 만들지 않는다.
+- MarginNote의 "하이라이트 → 카드" 경험에서 핵심만 가져온다. 마인드맵·카드 재배열은 만들지 않는다.
+- 인용·참고문헌 관리는 Zotero가 담당하므로 이 앱의 범위가 아니다.
+
+## 핵심 사용 흐름 (이게 되면 성공)
+
+1. PDF를 연다 (파일 열기 또는 창에 드래그).
+2. 본문에서 단어/문장을 드래그로 선택하고 `H` 키(또는 버튼)를 누른다.
+3. 하이라이트가 생기고, 오른쪽에 그 문구 전용 노트 패널이 열리며 바로 입력할 수 있다.
+4. 앱을 껐다 켜고 같은 PDF를 열면 하이라이트가 같은 자리에 그대로 있다.
+5. 하이라이트를 클릭하면 해당 노트가 오른쪽에 열린다. `Esc`로 닫는다.
+
+## 기술 스택
+
+- **Tauri v2** (Rust 쉘) + **React + TypeScript (strict)** + **Vite**
+- PDF 렌더링: **pdfjs-dist** (canvas + text layer)
+- 노트 편집기: **TipTap** (헤딩, 목록, 코드, 표, 수식은 KaTeX 확장)
+- 화이트보드: **Excalidraw** (노트 패널의 두 번째 탭)
+- 저장: **SQLite** (`tauri-plugin-sql`), 파일 접근은 `tauri-plugin-dialog`, `tauri-plugin-fs`
+- 패키지 매니저: pnpm
+
+선택 이유: 화이트보드(Excalidraw)와 리치 노트(TipTap)를 웹 라이브러리로 바로 쓰기 위해 웹 스택을 쓰고, 맥 앱 형태(.app)는 Tauri로 얻는다. Rust 코드는 플러그인 설정 수준으로 최소화한다.
+
+라이브러리 버전은 추측하지 말고 설치 시점의 최신 안정 버전을 확인해서 쓴다.
+
+## 화면 구성
+
+```
+┌────────────┬──────────────────────────┬──────────────────┐
+│ 하이라이트 │                          │ 노트 패널        │
+│ 목록       │      PDF 뷰어            │ [노트] [보드] 탭 │
+│ (현재 PDF) │  (하이라이트 오버레이)   │                  │
+│            │                          │ (선택 시만 열림) │
+└────────────┴──────────────────────────┴──────────────────┘
+
+```
+
+- 왼쪽: 현재 PDF의 하이라이트 목록 (페이지 순). 항목 클릭 → 해당 위치로 스크롤 + 노트 열기.
+- 가운데: PDF. 확대/축소, 페이지 이동, 본문 검색(`Cmd+F`).
+- 오른쪽: 노트 패널. 상단에 원문 문구(클릭하면 본문 위치로 이동), 아래에 탭 2개.
+  - **노트**: TipTap 리치 텍스트
+  - **보드**: Excalidraw 캔버스
+- UI 문자열은 한국어.
+
+## 데이터 모델
+
+```ts
+Document {
+  id: string            // PDF 파일 내용의 SHA-256 (파일이 이동·이름변경돼도 같은 문서로 인식)
+  path: string          // 마지막으로 연 경로
+  title: string
+  addedAt: string
+  lastOpenedAt: string
+}
+
+Highlight {
+  id: string            // uuid
+  documentId: string
+  pageIndex: number     // 0부터
+  rects: Rect[]         // PDF 좌표계(user space, 확대율 무관). 여러 줄이면 여러 개
+  text: string          // 선택한 원문
+  prefix: string        // 앞 32자 문맥 (재정렬용)
+  suffix: string        // 뒤 32자 문맥
+  color: string
+  createdAt: string
+}
+
+Note {
+  highlightId: string   // Highlight와 1:1
+  body: JSON            // TipTap 문서 JSON
+  board: JSON | null    // Excalidraw scene JSON
+  updatedAt: string
+}
+
+```
+
+- DB 위치: `~/Library/Application Support/PaperBoard/paperboard.db`
+- PDF 원본은 복사하지 않고 경로만 저장. 경로가 깨지면 다시 선택하게 하고 해시로 매칭.
+
+## 하이라이트 위치 저장 (가장 까다로운 부분)
+
+- 선택 영역의 `Range.getClientRects()`를 페이지 viewport 기준으로 변환한 뒤 `viewport.convertToPdfPoint()`로 **PDF 좌표계**에 저장한다. 화면 픽셀로 저장하지 않는다.
+- 렌더링할 때는 현재 viewport로 다시 변환해 오버레이 div를 그린다. 확대/축소해도 위치가 맞아야 한다.
+- 같은 줄에 붙은 rect들은 하나로 합친다.
+- 2단 편집 논문, 여러 줄 선택, 하이픈으로 끊긴 단어에서 반드시 테스트한다.
+- `text/prefix/suffix`는 지금은 표시·검색용이고, 나중에 좌표가 어긋날 때 재정렬에 쓴다.
+- 오버레이는 클릭은 받되 텍스트 선택을 막지 않게 레이어 순서와 `pointer-events`를 조정한다.
+
+## 마일스톤 (한 번에 하나씩, 끝날 때마다 내가 확인)
+
+- **M0 뼈대**: Tauri+React+TS 생성, PDF 열기(다이얼로그·드래그), pdf.js로 렌더링(텍스트 레이어 포함), 확대/축소, 페이지 이동. pdf.js worker 설정이 Vite/Tauri에서 동작하는지 확인.
+- **M1 하이라이트**: 선택 + `H` → 하이라이트 생성, SQLite 저장, 재실행 후 복원, 확대/축소 시 위치 유지.
+- **M2 노트**: 하이라이트 클릭 → 오른쪽 패널에 TipTap 노트. 자동 저장(500ms 디바운스). `Esc`로 닫기.
+- **M3 보드**: 노트 패널에 Excalidraw 탭 추가, scene 저장/복원.
+- **M4 목록·관리**: 왼쪽 하이라이트 목록, 하이라이트 삭제(노트도 함께, 확인창), 색상 변경.
+- **M5 편의**: 최근 문서 목록, 노트 전체를 마크다운으로 내보내기(문구 + 페이지 + 노트 본문).
+- **M6 내보내기 (맥)**: 라이브러리 전체를 **번들 파일 하나**로 내보내기. 설정에서 고른 폴더 (보통 Google Drive 데스크톱 앱의 동기화 폴더, 예: `~/Library/CloudStorage/GoogleDrive-…/내 드라이브/PaperBoard/`)에 [`paperboard-library.zip`](http://paperboard-library.zip)으로 저장. 노트를 저장할 때마다 자동으로 다시 쓰는 옵션 포함(디바운스 5초). 번들 형식은 아래 "Android 보기 전용" 참고.
+- **M7 Android 뷰어**: 같은 코드베이스의 Tauri v2 Android 빌드. 읽기 전용 모드. 번들 파일을 열어 단어장 화면 표시.
+- **M8 새로고침**: 폰에서 같은 번들을 다시 읽어 최신 내용 반영.
+
+이후 후보 (요청 전엔 하지 말 것): 노트 간 `[[링크]]`, 노트 전체 검색(맥), 폰에서 PDF 원문 보기, 폰에서 편집.
+
+## Android 보기 전용 (M6~M8)
+
+**목적은 단어장 열람.** 폰에서 논문을 다시 읽는 게 아니라, 맥에서 정리한 문구·노트를 훑어보는 것.
+
+### 번들 형식 ([`paperboard-library.zip`](http://paperboard-library.zip))
+
+```
+library.json        // 문서 목록, 하이라이트, 노트 본문
+boards/<highlightId>.svg   // 보드 탭은 내보낼 때 SVG로 렌더링해 둔다 (폰에서 Excalidraw 불필요)
+
+```
+
+- `library.json`의 노트 본문은 TipTap JSON과 함께 **렌더링된 HTML**도 넣는다. 폰은 HTML만 보여주면 된다.
+- 수식(KaTeX)은 HTML에 렌더링된 상태로 넣거나 폰 쪽에 KaTeX CSS만 포함한다.
+- PDF 원본은 기본적으로 **넣지 않는다**(용량). 나중에 옵션으로.
+- `schemaVersion` 필드를 둔다. 폰은 모르는 버전이면 안내 메시지를 띄운다.
+
+### 폰 화면
+
+- **단어장 목록** (메인): 모든 문서의 하이라이트를 한 목록으로. 각 항목 = 원문 문구 + 문서 제목·페이지 + 노트 첫 줄. 문서별 필터, 문구·노트 내용 검색.
+- **노트 상세**: 원문 문구, 노트 HTML, 보드 SVG(있으면). 편집 UI 없음.
+- 상단에 "새로고침"과 마지막으로 읽은 시각.
+
+### 파일 가져오기 방식
+
+1. **1순위 (M7)**: Android 파일 선택기(SAF)로 Google Drive에 있는 번들 파일을 고른다. 고른 URI의 영구 읽기 권한(`takePersistableUriPermission`)을 받아 저장하고, 앱 내부 저장소에 복사본을 캐시한다. "새로고침"은 같은 URI를 다시 읽는다.
+   - Drive 문서 제공자가 영구 권한과 재읽기 시 최신 내용을 주는지 **실기기로 먼저 확인**한다. Tauri dialog/fs 플러그인으로 부족하면 작은 Kotlin 플러그인을 쓴다.
+2. **대안 (M8에서 1순위가 안 될 때만)**: Google Drive API(`drive.file` 또는 읽기 전용 범위) + OAuth로 `PaperBoard/` 폴더의 번들을 직접 다운로드. 개인용이라 OAuth 앱은 테스트 모드, 내 계정만 등록. 이 방식으로 갈 때는 먼저 나에게 물어본다(Google Cloud 설정을 내가 해야 함).
+
+### 코드 구조
+
+- 하나의 저장소, 하나의 React 앱. 플랫폼에 따라 모드 분기: 데스크톱 = 편집기, Android = 뷰어.
+- 뷰어는 DB(SQLite)를 쓰지 않고 캐시된 번들의 `library.json`만 읽는다.
+- 번들 생성(맥)과 번들 읽기(폰)는 같은 타입 정의를 공유하고, 왕복 테스트(vitest)를 붙인다.
+
+### Android 빌드
+
+- 사전 준비(없으면 안내만): Android Studio, Android SDK·NDK, JDK. Tauri 공식 문서의 Android 준비 절차를 따른다.
+- `pnpm tauri android init` → `pnpm tauri android build --apk`
+- 설치는 APK 직접 설치(adb 또는 파일 전송). 스토어 배포 안 함.
+
+## 명령어
+
+- 개발 실행: `pnpm tauri dev`
+- 빌드: `pnpm tauri build`
+- 타입체크: `pnpm tsc --noEmit`
+- 테스트: `pnpm vitest run`
+
+사전 준비(없으면 안내만 하고 설치는 내게 물어볼 것): Xcode Command Line Tools, Rust(rustup), Node, pnpm.
+
+## 작업 규칙
+
+### 파일 접근 범위 (최우선)
+
+- **이 프로젝트 폴더(이 [CLAUDE.md](http://CLAUDE.md)가 있는 폴더와 그 하위) 밖의 파일은 읽지도 쓰지도 않는다.** 홈 디렉터리, `~/Library`, `~/Documents`, Google Drive 동기화 폴더, 다른 프로젝트 모두 포함.
+- 개발·테스트 중 앱이 쓰는 데이터도 프로젝트 안에 둔다.
+  - 개발 실행 시 DB 경로: `./.dev-data/paperboard.db` (개발 모드에서는 `~/Library/Application Support/`를 쓰지 않도록 분기)
+  - 내보내기 테스트 대상 폴더: `./.dev-data/export/` (실제 Google Drive 폴더에 쓰지 않는다)
+  - 테스트용 PDF: `./fixtures/` 안에 둔 파일만 사용
+  - `.dev-data/`는 `.gitignore`에 넣는다.
+- 위 규칙에 걸리는 작업이 필요하면 **실행하지 말고 먼저 물어본다.** 예:
+  - Rust·Android SDK 같은 도구 설치(홈 디렉터리에 설치됨) → 명령어만 알려주고 설치는 내가 한다
+  - 전역 설정 파일 수정(`~/.zshrc`, `~/.gitconfig`, `~/.cargo/config.toml` 등)
+  - 프로젝트 밖 경로를 탐색하는 `find`, `ls`, `cat` 등
+- 예외: pnpm·cargo가 의존성을 설치하면서 자체 캐시(`~/.pnpm-store`, `~/.cargo/registry`)에 쓰는 것은 허용.
+- 완성된 앱이 **실행될 때** 사용자가 고른 PDF를 읽고, `~/Library/Application Support/PaperBoard/`와 설정에서 고른 내보내기 폴더에 쓰는 것은 앱의 정상 동작이다. 이 규칙은 개발 작업(Claude Code)에 대한 것이다.
+
+### 일반
+
+- 마일스톤 하나씩 진행한다. 끝나면 타입체크·테스트·`pnpm tauri dev` 실행까지 확인하고, 내가 직접 해볼 수동 테스트 체크리스트를 짧게 남긴다.
+- 무거운 의존성을 새로 추가할 때는 먼저 물어본다. 위 스택에 있는 건 바로 써도 된다.
+- 네트워크 호출 없음. 텔레메트리·외부 API 금지. 모든 데이터는 로컬.
+- 요청과 상관없는 코드는 리팩터링하지 않는다.
+- 좌표 변환, DB 저장/로드 같은 순수 로직은 vitest로 테스트를 붙인다.
+- 컴포넌트는 작게 나누고, PDF 렌더링 / 하이라이트 레이어 / 노트 패널 / 저장소를 분리한다.
+- 나는 C++ 배경이고 Rust·React는 깊게 안 써봤다. Rust 쪽이나 낯선 패턴을 쓰면 왜 그렇게 했는지 한두 줄로 설명한다.
+- 커밋은 마일스톤 단위로, 메시지는 한국어로 무엇을 했는지 한 줄.
+
+## 하지 않을 것
+
+- 계정, 자체 서버, 양방향 동기화, 협업
+- 폰에서 편집
+- PDF 원본 수정(하이라이트를 PDF 파일에 박지 않는다. 모두 DB에만 저장)
+- 마인드맵, 카드 재배열, 플래시카드
+- 윈도우·리눅스·iOS 대응

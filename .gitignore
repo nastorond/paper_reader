@@ -1,27 +1,23 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# PyInstaller build files
-build/
+# Node / Vite
+node_modules/
 dist/
-*.spec
+*.tsbuildinfo
+*.log
 
-# Virtual Environments
-venv/
-env/
-.venv/
-.env/
+# Tauri / Rust
+src-tauri/target/
+
+# 개발용 앱 데이터 (DB, 내보내기 테스트)
+.dev-data/
 
 # IDE files
 .vscode/
 .idea/
 *.swp
 
-# Application Data & User Library
-papers/
-*.json
+# Any random SQLite DBs created
+*.db
+*.sqlite3
 
 # OS generated files
 .DS_Store
@@ -31,7 +27,3 @@ papers/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# Any random SQLite DBs created
-*.db
-*.sqlite3
