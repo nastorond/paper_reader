@@ -128,6 +128,40 @@
           "path": "/Volumes/**/*.md"
         }
       ]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "$HOME/**/paperboard-library.zip"
+        },
+        {
+          "path": "$HOME/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip.tmp"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-rename",
+      "allow": [
+        {
+          "path": "$HOME/**/paperboard-library.zip"
+        },
+        {
+          "path": "$HOME/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip.tmp"
+        }
+      ]
     }
   ]
 }

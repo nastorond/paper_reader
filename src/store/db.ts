@@ -36,6 +36,11 @@ const MIGRATIONS: string[] = [
      board TEXT,
      updated_at TEXT NOT NULL
    );`,
+  // v2 (M6): 앱 설정(번들 내보내기 폴더, 자동 내보내기 등)
+  `CREATE TABLE settings (
+     key TEXT PRIMARY KEY,
+     value TEXT NOT NULL
+   );`,
 ];
 
 export async function migrate(db: SqlDb): Promise<void> {
@@ -77,6 +82,26 @@ export async function listRecentDocuments(db: SqlDb, limit = 20): Promise<Recent
     [limit],
   );
   return rows.map((r) => ({ ...toDocument(r), highlightCount: Number(r.highlight_count) }));
+}
+
+// 번들 내보내기용: 라이브러리 전체(모든 문서·하이라이트·노트).
+export async function listLibrary(db: SqlDb): Promise<{ documents: DocumentRecord[]; highlights: Highlight[]; notes: Note[] }> {
+  const docs = await db.select<DocumentRow[]>("SELECT * FROM documents ORDER BY last_opened_at DESC");
+  const hls = await db.select<HighlightRow[]>("SELECT * FROM highlights ORDER BY document_id, page_index, created_at");
+  const notes = await db.select<NoteRow[]>("SELECT * FROM notes");
+  return { documents: docs.map(toDocument), highlights: hls.map(toHighlight), notes: notes.map(toNote) };
+}
+
+export async function getSetting(db: SqlDb, key: string): Promise<string | null> {
+  const rows = await db.select<{ value: string }[]>("SELECT value FROM settings WHERE key = ?", [key]);
+  return rows[0]?.value ?? null;
+}
+
+export async function setSetting(db: SqlDb, key: string, value: string): Promise<void> {
+  await db.execute("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", [
+    key,
+    value,
+  ]);
 }
 
 export async function insertHighlight(db: SqlDb, h: Highlight): Promise<void> {

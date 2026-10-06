@@ -27,6 +27,9 @@ import { readingOrder } from "./sidebar/order";
 import { RecentList } from "./recent/RecentList";
 import { buildNotesMarkdown, exportNotesToFile } from "./export/exportNotes";
 import { safeFileName } from "./export/notesMarkdown";
+import { useBundleExport } from "./bundle/useBundleExport";
+import { BundlePanel } from "./bundle/BundlePanel";
+import { notifyLibraryChanged } from "./bundle/libraryEvents";
 import "./App.css";
 
 interface OpenDoc {
@@ -55,6 +58,15 @@ export default function App() {
   const [listOpen, setListOpen] = useState(true);
   const [recentDocs, setRecentDocs] = useState<RecentDocument[]>([]);
   const [recentOpen, setRecentOpen] = useState(false);
+  const [bundleOpen, setBundleOpen] = useState(false);
+  const bundle = useBundleExport();
+  // 개발 자가 테스트: 번들 폴더가 정해지면 한 번 바로 내보낸다
+  const devBundleDone = useRef(false);
+  useEffect(() => {
+    if (!import.meta.env.DEV || !import.meta.env.VITE_DEV_BUNDLE_DIR || !bundle.state.dir || devBundleDone.current) return;
+    devBundleDone.current = true;
+    void bundle.exportNow();
+  }, [bundle]);
 
   const refreshRecent = useCallback(async () => {
     try {
@@ -263,6 +275,7 @@ export default function App() {
     devLog(`highlight saved p${h.pageIndex + 1} "${h.text}" rects=${JSON.stringify(h.rects)}`);
     window.getSelection()?.removeAllRanges();
     setHighlights((prev) => [...prev, h]);
+    notifyLibraryChanged();
     setSelectedHighlightId(h.id);
     setFocusNoteId(h.id);
     setNoteTab("note");
@@ -279,6 +292,7 @@ export default function App() {
     setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, color } : h)));
     try {
       await updateHighlightColor(await getDb(), id, color);
+      notifyLibraryChanged();
     } catch (e) {
       console.error(e);
       setError(`색상을 저장하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
@@ -293,6 +307,7 @@ export default function App() {
     try {
       await deleteHighlight(await getDb(), h.id);
       setHighlights((prev) => prev.filter((x) => x.id !== h.id));
+      notifyLibraryChanged();
       devLog(`highlight deleted ${h.id} "${h.text}"`);
     } catch (e) {
       console.error(e);
@@ -408,7 +423,18 @@ export default function App() {
           setRecentOpen((v) => !v);
         }}
         onExport={() => void exportMarkdown()}
+        bundleOpen={bundleOpen}
+        onToggleBundle={() => setBundleOpen((v) => !v)}
       />
+      {bundleOpen && (
+        <BundlePanel
+          state={bundle.state}
+          onSetDir={(d) => void bundle.setDir(d)}
+          onSetAuto={(a) => void bundle.setAuto(a)}
+          onExportNow={() => void bundle.exportNow()}
+          onClose={() => setBundleOpen(false)}
+        />
+      )}
       {recentOpen && (
         <div className="recent-popover" onMouseLeave={() => setRecentOpen(false)}>
           <RecentList docs={recentDocs} onOpen={(d) => void openRecent(d)} />

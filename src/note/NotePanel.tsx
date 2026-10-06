@@ -6,6 +6,7 @@ import { getDb } from "../store/tauriDb";
 import { getNote, saveNoteBoard, saveNoteBody } from "../store/db";
 import { HIGHLIGHT_COLORS, type Highlight } from "../store/types";
 import { devLog } from "../dev/devLog";
+import { notifyLibraryChanged } from "../bundle/libraryEvents";
 
 // Excalidraw 는 무거워서 보드 탭을 처음 열 때 불러온다.
 const BoardEditor = lazy(() => import("./BoardEditor"));
@@ -59,6 +60,7 @@ export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJ
         try {
           await save(v);
           setSaveState("saved");
+          notifyLibraryChanged();
           devLog(`${what} saved ${highlight.id}: ${JSON.stringify(v).slice(0, 160)}`);
         } catch (e) {
           console.error(e);

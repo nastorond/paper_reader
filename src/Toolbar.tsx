@@ -16,6 +16,8 @@ interface Props {
   recentOpen: boolean;
   onToggleRecent(): void;
   onExport(): void;
+  bundleOpen: boolean;
+  onToggleBundle(): void;
 }
 
 export function Toolbar(props: Props) {
@@ -93,6 +95,9 @@ export function Toolbar(props: Props) {
         </button>
         <button disabled={!hasDoc} onClick={props.onExport} title="노트 전체를 마크다운 파일로 내보내기">
           내보내기
+        </button>
+        <button className={props.bundleOpen ? "active" : ""} onClick={props.onToggleBundle} title="폰용 번들 내보내기 설정">
+          번들
         </button>
       </div>
       <div className="toolbar-title" title={title ?? undefined}>

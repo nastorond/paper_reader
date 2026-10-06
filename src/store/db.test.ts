@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   deleteHighlight,
   getNote,
+  getSetting,
+  listLibrary,
+  setSetting,
   insertHighlight,
   listHighlights,
   listRecentDocuments,
@@ -48,7 +51,7 @@ describe("db", () => {
     const db = memoryDb();
     await migrate(db);
     await migrate(db);
-    expect(db.raw.prepare("PRAGMA user_version").get()).toEqual({ user_version: 1 });
+    expect(db.raw.prepare("PRAGMA user_version").get()).toEqual({ user_version: 2 });
   });
 
   it("문서 upsert: 다시 열면 경로·열람 시각만 갱신", async () => {
@@ -150,5 +153,28 @@ describe("db", () => {
       ["b", 0],
     ]);
     expect(await listRecentDocuments(db, 1)).toHaveLength(1);
+  });
+
+  it("설정 저장·덮어쓰기", async () => {
+    const db = memoryDb();
+    await migrate(db);
+    expect(await getSetting(db, "bundle.dir")).toBeNull();
+    await setSetting(db, "bundle.dir", "/a");
+    await setSetting(db, "bundle.dir", "/b");
+    expect(await getSetting(db, "bundle.dir")).toBe("/b");
+  });
+
+  it("라이브러리 전체 읽기(모든 문서)", async () => {
+    const db = memoryDb();
+    await migrate(db);
+    await upsertDocument(db, { id: "a", path: "/a.pdf", title: "A" }, "2026-10-01T00:00:00Z");
+    await upsertDocument(db, { id: "b", path: "/b.pdf", title: "B" }, "2026-10-02T00:00:00Z");
+    await insertHighlight(db, highlight({ id: "h1", documentId: "a" }));
+    await insertHighlight(db, highlight({ id: "h2", documentId: "b" }));
+    await saveNoteBody(db, "h2", { type: "doc" }, "2026-10-02T00:00:01Z");
+    const lib = await listLibrary(db);
+    expect(lib.documents.map((d) => d.id)).toEqual(["b", "a"]);
+    expect(lib.highlights.map((h) => h.id)).toEqual(["h1", "h2"]);
+    expect(lib.notes.map((n) => n.highlightId)).toEqual(["h2"]);
   });
 });

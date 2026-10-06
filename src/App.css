@@ -639,3 +639,61 @@ button:disabled {
 .app {
   position: relative;
 }
+
+/* ---- 번들 내보내기 ---- */
+
+.bundle-popover {
+  position: absolute;
+  top: 44px;
+  right: 16px;
+  z-index: 20;
+  width: 440px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bundle-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bundle-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.bundle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bundle-label {
+  color: var(--muted);
+  flex: none;
+}
+
+.bundle-dir {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* 긴 경로는 끝(폴더 이름)이 보이게 */
+  text-align: left;
+}
+
+.bundle-status {
+  color: var(--muted);
+  font-size: 12px;
+}
