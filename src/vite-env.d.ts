@@ -11,4 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_DEV_PRESS_H?: string;
   // 개발 자가 테스트: PDF 를 연 뒤 이 페이지(1부터)로 이동한다
   readonly VITE_DEV_GOTO_PAGE?: string;
+  // 개발 자가 테스트: 새로 만든 하이라이트의 노트에 이 글을 입력한다($...$ 는 수식)
+  readonly VITE_DEV_TYPE_NOTE?: string;
+  // 개발 자가 테스트: PDF 를 연 뒤 첫 하이라이트의 노트를 연다
+  readonly VITE_DEV_OPEN_NOTE?: string;
 }

@@ -101,9 +101,16 @@ button:disabled {
   text-align: right;
 }
 
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
 .main {
   position: relative;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   background: var(--viewer-bg);
 }
@@ -210,4 +217,198 @@ button:disabled {
   transform: none !important;
   left: 0;
   top: 0;
+}
+
+/* ---- 노트 패널 ---- */
+
+.note-panel {
+  flex: none;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  min-height: 0;
+}
+
+.note-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 12px 4px;
+}
+
+.note-quote {
+  flex: 1;
+  text-align: left;
+  border: none;
+  border-left: 3px solid #eab308;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-weight: 600;
+  line-height: 1.4;
+  max-height: 6.5em;
+  overflow: auto;
+}
+
+.note-quote:hover {
+  background: var(--bg);
+}
+
+.note-close {
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+.note-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.save-state.error {
+  color: #dc2626;
+}
+
+.note-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.note-tabs button {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 6px 10px;
+}
+
+.note-tabs button.active {
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.note-loading {
+  padding: 16px;
+  color: var(--muted);
+}
+
+.note-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.note-toolbar button {
+  padding: 2px 8px;
+  min-width: 28px;
+}
+
+.note-toolbar button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.note-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px;
+  cursor: text;
+}
+
+.note-content .ProseMirror {
+  min-height: 100%;
+  outline: none;
+  line-height: 1.6;
+}
+
+.note-content .ProseMirror > :first-child {
+  margin-top: 0;
+}
+
+.note-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.note-content pre {
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.note-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.note-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.note-content th,
+.note-content td {
+  border: 1px solid var(--border);
+  padding: 4px 6px;
+  vertical-align: top;
+  min-width: 40px;
+}
+
+.note-content th {
+  background: var(--bg);
+}
+
+.note-content .selectedCell {
+  background: rgb(37 99 235 / 0.12);
+}
+
+.note-content [data-type="inline-math"],
+.note-content [data-type="block-math"] {
+  cursor: pointer;
+}
+
+.note-content [data-type="block-math"] {
+  margin: 8px 0;
+  text-align: center;
+}
+
+.math-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.math-edit input {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
 }

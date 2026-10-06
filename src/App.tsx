@@ -10,6 +10,7 @@ import { getDb } from "./store/tauriDb";
 import { insertHighlight, listHighlights, upsertDocument } from "./store/db";
 import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
+import { NotePanel } from "./note/NotePanel";
 import "./App.css";
 
 interface OpenDoc {
@@ -29,6 +30,9 @@ export default function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
+  // 방금 만든 하이라이트면 노트 편집기에 바로 포커스(핵심 흐름 3번)
+  const [focusNoteId, setFocusNoteId] = useState<string | null>(null);
+  const selectedHighlight = highlights.find((h) => h.id === selectedHighlightId) ?? null;
   const mainRef = useRef<HTMLElement>(null);
   const viewerRef = useRef<PdfViewerHandle>(null);
 
@@ -93,6 +97,12 @@ export default function App() {
   }, [doc]);
 
   useEffect(() => {
+    if (!import.meta.env.DEV || !import.meta.env.VITE_DEV_OPEN_NOTE || !doc || highlights.length === 0) return;
+    const t = setTimeout(() => setSelectedHighlightId((cur) => cur ?? highlights[0].id), 800);
+    return () => clearTimeout(t);
+  }, [doc, highlights]);
+
+  useEffect(() => {
     const page = import.meta.env.DEV ? Number(import.meta.env.VITE_DEV_GOTO_PAGE) : NaN;
     if (!doc || !Number.isInteger(page)) return;
     const t = setTimeout(() => viewerRef.current?.scrollToPage(page - 1), 500);
@@ -137,20 +147,23 @@ export default function App() {
     window.getSelection()?.removeAllRanges();
     setHighlights((prev) => [...prev, h]);
     setSelectedHighlightId(h.id);
+    setFocusNoteId(h.id);
   }, [doc, showNotice]);
 
-  // H: 하이라이트, Esc: 선택 해제 (M2 에서 노트 패널 닫기로 확장)
+  // H: 하이라이트, Esc: 노트 패널 닫기(노트 입력 중에도 동작)
   // e.code 를 쓰는 이유: 한글 입력 상태에서는 e.key 가 "ㅗ" 가 된다.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
+      if (e.key === "Escape") {
+        setSelectedHighlightId(null);
+        return;
+      }
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (e.code === "KeyH") {
         e.preventDefault();
         void createHighlight();
-      } else if (e.key === "Escape") {
-        setSelectedHighlightId(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -206,6 +219,7 @@ export default function App() {
         onFitWidth={() => doc && fitWidth(doc.firstPageWidth)}
         onHighlight={() => void createHighlight()}
       />
+      <div className="workspace">
       <main className="main" ref={mainRef}>
         {doc ? (
           <PdfViewer
@@ -215,7 +229,10 @@ export default function App() {
             onPageChange={setPageIndex}
             highlights={highlights}
             selectedHighlightId={selectedHighlightId}
-            onHighlightClick={setSelectedHighlightId}
+            onHighlightClick={(id) => {
+              setSelectedHighlightId(id);
+              setFocusNoteId(null);
+            }}
           />
         ) : (
           <div className="empty">
@@ -232,6 +249,16 @@ export default function App() {
         )}
         {dragging && <div className="drop-overlay">여기에 놓아서 열기</div>}
       </main>
+      {selectedHighlight && (
+        <NotePanel
+          key={selectedHighlight.id}
+          highlight={selectedHighlight}
+          autoFocus={focusNoteId === selectedHighlight.id}
+          onClose={() => setSelectedHighlightId(null)}
+          onJump={() => viewerRef.current?.scrollToHighlight(selectedHighlight)}
+        />
+      )}
+      </div>
     </div>
   );
 }

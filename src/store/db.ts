@@ -1,4 +1,4 @@
-import type { DocumentRecord, Highlight, Rect } from "./types";
+import type { DocumentRecord, Highlight, Note, Rect } from "./types";
 
 // tauri-plugin-sql 의 Database 와 같은 모양의 최소 인터페이스.
 // 앱에서는 플러그인을, 테스트에서는 node:sqlite 어댑터를 넣는다.
@@ -79,6 +79,36 @@ export async function listHighlights(db: SqlDb, documentId: string): Promise<Hig
     [documentId],
   );
   return rows.map(toHighlight);
+}
+
+export async function getNote(db: SqlDb, highlightId: string): Promise<Note | null> {
+  const rows = await db.select<NoteRow[]>("SELECT * FROM notes WHERE highlight_id = ?", [highlightId]);
+  return rows[0] ? toNote(rows[0]) : null;
+}
+
+// 노트 본문(TipTap JSON) 저장. 보드(M3)는 건드리지 않는다.
+export async function saveNoteBody(db: SqlDb, highlightId: string, body: unknown, now: string): Promise<void> {
+  await db.execute(
+    `INSERT INTO notes (highlight_id, body, board, updated_at) VALUES (?, ?, NULL, ?)
+     ON CONFLICT(highlight_id) DO UPDATE SET body = excluded.body, updated_at = excluded.updated_at`,
+    [highlightId, JSON.stringify(body), now],
+  );
+}
+
+interface NoteRow {
+  highlight_id: string;
+  body: string;
+  board: string | null;
+  updated_at: string;
+}
+
+function toNote(r: NoteRow): Note {
+  return {
+    highlightId: r.highlight_id,
+    body: JSON.parse(r.body),
+    board: r.board === null ? null : JSON.parse(r.board),
+    updatedAt: r.updated_at,
+  };
 }
 
 interface DocumentRow {

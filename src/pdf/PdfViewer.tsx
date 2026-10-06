@@ -3,10 +3,13 @@ import type { PDFDocumentProxy } from "./pdfjs";
 import { PdfPage, type PageSize } from "./PdfPage";
 import { anchorToScrollTop, currentPageIndex, makeAnchor, type ScrollAnchor } from "./pageTracking";
 import { draftFromSelection, type DraftResult } from "../highlight/fromSelection";
+import { pdfRectToPercent } from "../highlight/geometry";
 import type { Highlight } from "../store/types";
 
 export interface PdfViewerHandle {
   scrollToPage(index: number): void;
+  // 하이라이트 위치가 화면 위쪽 1/3 쯤 오도록 스크롤한다.
+  scrollToHighlight(h: Highlight): void;
   // 현재 텍스트 선택 영역을 하이라이트 초안(PDF 좌표)으로 만든다.
   draftFromSelection(): DraftResult;
 }
@@ -119,6 +122,14 @@ export function PdfViewer({ doc, scale, onPageChange, highlights, selectedHighli
         if (!el) return;
         const page = el.querySelector<HTMLElement>(`.pdf-page[data-page-index="${index}"]`);
         if (page) el.scrollTop = page.offsetTop - 12;
+      },
+      scrollToHighlight(h: Highlight) {
+        const el = scrollRef.current;
+        const vp = sizes?.[h.pageIndex]?.viewport;
+        const page = el?.querySelector<HTMLElement>(`.pdf-page[data-page-index="${h.pageIndex}"]`);
+        if (!el || !vp || !page || h.rects.length === 0) return;
+        const top = Math.min(...h.rects.map((r) => pdfRectToPercent(r, vp).top));
+        el.scrollTop = page.offsetTop + (top / 100) * page.offsetHeight - el.clientHeight / 3;
       },
       draftFromSelection() {
         return draftFromSelection((i) => sizes?.[i]?.viewport);
