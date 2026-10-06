@@ -101,7 +101,7 @@ Note {
 - **M3 보드**: 노트 패널에 Excalidraw 탭 추가, scene 저장/복원.
 - **M4 목록·관리**: 왼쪽 하이라이트 목록, 하이라이트 삭제(노트도 함께, 확인창), 색상 변경.
 - **M5 편의**: 최근 문서 목록, 노트 전체를 마크다운으로 내보내기(문구 + 페이지 + 노트 본문).
-- **M6 내보내기 (맥)**: 라이브러리 전체를 **번들 파일 하나**로 내보내기. 설정에서 고른 폴더 (보통 Google Drive 데스크톱 앱의 동기화 폴더, 예: `~/Library/CloudStorage/GoogleDrive-…/내 드라이브/PaperBoard/`)에 [`paperboard-library.zip`](http://paperboard-library.zip)으로 저장. 노트를 저장할 때마다 자동으로 다시 쓰는 옵션 포함(디바운스 5초). 번들 형식은 아래 "Android 보기 전용" 참고.
+- **M6 내보내기 (맥)**: 라이브러리 전체를 **번들 파일 하나**로 내보내기. 설정에서 고른 폴더 (보통 Google Drive 데스크톱 앱의 동기화 폴더, 예: `~/Library/CloudStorage/GoogleDrive-…/내 드라이브/PaperBoard/`)에 [`paperboard-library.zip`](http://paperboard-library.zip)으로 저장. 노트를 저장할 때마다 자동으로 다시 쓰는 옵션 포함(디바운스 5초). 번들 형식은 `android-viewer` 스킬 참고.
 - **M7 Android 뷰어**: 같은 코드베이스의 Tauri v2 Android 빌드. 읽기 전용 모드. 번들 파일을 열어 단어장 화면 표시.
 - **M8 새로고침**: 폰에서 같은 번들을 다시 읽어 최신 내용 반영.
 
@@ -109,44 +109,9 @@ Note {
 
 ## Android 보기 전용 (M6~M8)
 
-**목적은 단어장 열람.** 폰에서 논문을 다시 읽는 게 아니라, 맥에서 정리한 문구·노트를 훑어보는 것.
+번들 형식·폰 화면·파일 가져오기·코드 구조·Android 빌드 상세는 `android-viewer` 스킬(`.claude/skills/android-viewer/SKILL.md`)에 있다. M6~M8 작업 전에 반드시 읽는다.
 
-### 번들 형식 ([`paperboard-library.zip`](http://paperboard-library.zip))
-
-```
-library.json        // 문서 목록, 하이라이트, 노트 본문
-boards/<highlightId>.svg   // 보드 탭은 내보낼 때 SVG로 렌더링해 둔다 (폰에서 Excalidraw 불필요)
-
-```
-
-- `library.json`의 노트 본문은 TipTap JSON과 함께 **렌더링된 HTML**도 넣는다. 폰은 HTML만 보여주면 된다.
-- 수식(KaTeX)은 HTML에 렌더링된 상태로 넣거나 폰 쪽에 KaTeX CSS만 포함한다.
-- PDF 원본은 기본적으로 **넣지 않는다**(용량). 나중에 옵션으로.
-- `schemaVersion` 필드를 둔다. 폰은 모르는 버전이면 안내 메시지를 띄운다.
-
-### 폰 화면
-
-- **단어장 목록** (메인): 모든 문서의 하이라이트를 한 목록으로. 각 항목 = 원문 문구 + 문서 제목·페이지 + 노트 첫 줄. 문서별 필터, 문구·노트 내용 검색.
-- **노트 상세**: 원문 문구, 노트 HTML, 보드 SVG(있으면). 편집 UI 없음.
-- 상단에 "새로고침"과 마지막으로 읽은 시각.
-
-### 파일 가져오기 방식
-
-1. **1순위 (M7)**: Android 파일 선택기(SAF)로 Google Drive에 있는 번들 파일을 고른다. 고른 URI의 영구 읽기 권한(`takePersistableUriPermission`)을 받아 저장하고, 앱 내부 저장소에 복사본을 캐시한다. "새로고침"은 같은 URI를 다시 읽는다.
-   - Drive 문서 제공자가 영구 권한과 재읽기 시 최신 내용을 주는지 **실기기로 먼저 확인**한다. Tauri dialog/fs 플러그인으로 부족하면 작은 Kotlin 플러그인을 쓴다.
-2. **대안 (M8에서 1순위가 안 될 때만)**: Google Drive API(`drive.file` 또는 읽기 전용 범위) + OAuth로 `PaperBoard/` 폴더의 번들을 직접 다운로드. 개인용이라 OAuth 앱은 테스트 모드, 내 계정만 등록. 이 방식으로 갈 때는 먼저 나에게 물어본다(Google Cloud 설정을 내가 해야 함).
-
-### 코드 구조
-
-- 하나의 저장소, 하나의 React 앱. 플랫폼에 따라 모드 분기: 데스크톱 = 편집기, Android = 뷰어.
-- 뷰어는 DB(SQLite)를 쓰지 않고 캐시된 번들의 `library.json`만 읽는다.
-- 번들 생성(맥)과 번들 읽기(폰)는 같은 타입 정의를 공유하고, 왕복 테스트(vitest)를 붙인다.
-
-### Android 빌드
-
-- 사전 준비(없으면 안내만): Android Studio, Android SDK·NDK, JDK. Tauri 공식 문서의 Android 준비 절차를 따른다.
-- `pnpm tauri android init` → `pnpm tauri android build --apk`
-- 설치는 APK 직접 설치(adb 또는 파일 전송). 스토어 배포 안 함.
+- Google Drive API + OAuth 방식(대안)으로 갈 때는 먼저 나에게 물어본다(Google Cloud 설정을 내가 해야 함).
 
 ## 명령어
 
