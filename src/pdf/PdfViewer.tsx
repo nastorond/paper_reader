@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
 import type { PDFDocumentProxy } from "./pdfjs";
 import { PdfPage, type PageSize } from "./PdfPage";
-import { anchorToScrollTop, currentPageIndex, makeAnchor, type ScrollAnchor } from "./pageTracking";
+import {
+  anchorToScrollTop,
+  currentPageIndex,
+  focalToScroll,
+  makeAnchor,
+  makeFocalAnchor,
+  type FocalAnchor,
+  type PageBox,
+  type ScrollAnchor,
+} from "./pageTracking";
+import { usePinchZoom } from "./usePinchZoom";
+import { devLog } from "../dev/devLog";
 import { draftFromSelection, type DraftResult } from "../highlight/fromSelection";
 import { pdfRectToPercent } from "../highlight/geometry";
 import "./pdf.css";
@@ -24,6 +35,8 @@ interface Props {
   onHighlightClick(id: string | null): void;
   // 처음 열릴 때 이 하이라이트 위치로 스크롤(폰 "원문 보기")
   focusHighlightId?: string;
+  // 두 손가락 확대로 배율을 바꾸려 할 때(부모가 scale 을 갱신한다)
+  onZoom?(scale: number): void;
   ref?: Ref<PdfViewerHandle>;
 }
 
@@ -38,6 +51,7 @@ export function PdfViewer({
   selectedHighlightId,
   onHighlightClick,
   focusHighlightId,
+  onZoom,
   ref,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -75,6 +89,53 @@ export function PdfViewer({
     };
   }, []);
 
+  const pageBoxes = useCallback((): PageBox[] => {
+    const el = scrollRef.current;
+    if (!el) return [];
+    return Array.from(el.querySelectorAll<HTMLElement>(".pdf-page"), (p) => ({
+      left: p.offsetLeft,
+      top: p.offsetTop,
+      width: p.offsetWidth,
+      height: p.offsetHeight,
+    }));
+  }, []);
+
+  // 두 손가락 확대: 확대 직전에 손가락 사이 지점을 기억해 두고(focalRef), 아래 3번 effect 가 배율이
+  // 바뀐 직후 그 지점이 다시 손가락 밑에 오도록 스크롤을 맞춘다.
+  const focalRef = useRef<FocalAnchor | null>(null);
+  usePinchZoom(scrollRef, scale, ({ scale: next, viewX, viewY }) => {
+    const el = scrollRef.current;
+    if (!el || !onZoom) return;
+    focalRef.current = makeFocalAnchor(pageBoxes(), el.scrollLeft, el.scrollTop, viewX, viewY);
+    onZoom(next);
+  });
+
+  // 개발 자가 테스트: 첫 하이라이트 위에서 ctrl+휠 핀치를 보내 확대 전후 화면 위치를 비교한다.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !import.meta.env.VITE_DEV_PINCH || !sizes) return;
+    const t = setTimeout(async () => {
+      const el = scrollRef.current;
+      const hl = el?.querySelector<HTMLElement>(".hl");
+      if (!el || !hl) return devLog("pinch test: no highlight");
+      const c = (e: HTMLElement) => {
+        const r = e.getBoundingClientRect();
+        return [r.left + r.width / 2, r.top + r.height / 2];
+      };
+      const [x0, y0] = c(hl);
+      const w0 = el.querySelector<HTMLElement>(".pdf-page")!.offsetWidth;
+      for (let i = 0; i < 12; i++) {
+        el.dispatchEvent(new WheelEvent("wheel", { ctrlKey: true, deltaY: -8, clientX: x0, clientY: y0, bubbles: true, cancelable: true }));
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+      }
+      await new Promise((r) => setTimeout(r, 400));
+      const [x1, y1] = c(el.querySelector<HTMLElement>(".hl")!);
+      const w1 = el.querySelector<HTMLElement>(".pdf-page")!.offsetWidth;
+      devLog(`pinch test: before (${x0.toFixed(1)}, ${y0.toFixed(1)}) after (${x1.toFixed(1)}, ${y1.toFixed(1)}) zoom x${(w1 / w0).toFixed(2)}`);
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [sizes]);
+
   // 2) 스크롤할 때 현재 페이지와 확대/축소용 앵커를 갱신한다.
   const onScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -102,12 +163,21 @@ export function PdfViewer({
 
   // 3) 배율이 바뀌면 DOM 크기가 바뀐 직후(그리기 전) 같은 내용이 보이도록 스크롤을 맞춘다.
   //    useLayoutEffect 는 브라우저가 화면을 그리기 전에 동기 실행되어 튀는 게 안 보인다.
+  //    두 손가락 확대였다면 손가락 사이 지점 기준, 그 밖(버튼·단축키)이면 화면 위쪽 기준.
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el || !sizes) return;
+    const focal = focalRef.current;
+    focalRef.current = null;
+    if (focal) {
+      const s = focalToScroll(focal, pageBoxes());
+      el.scrollLeft = s.left;
+      el.scrollTop = s.top;
+      return;
+    }
     const { tops, heights } = measure();
     el.scrollTop = anchorToScrollTop(anchorRef.current, tops, heights);
-  }, [scale, sizes, measure]);
+  }, [scale, sizes, measure, pageBoxes]);
 
   // 4) 화면 위아래로 한 화면 높이 이내에 있는 페이지만 active.
   useEffect(() => {

@@ -94,6 +94,7 @@ export default function PdfScreen({ document: doc, highlights, focusId, pdfUri, 
             doc={pdf}
             scale={scale}
             onPageChange={setPage}
+            onZoom={setScale}
             highlights={hls}
             selectedHighlightId={focusId ?? null}
             focusHighlightId={focusId}

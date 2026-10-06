@@ -457,6 +457,7 @@ export default function App() {
             doc={doc.pdf}
             scale={scale}
             onPageChange={setPageIndex}
+            onZoom={setScale}
             highlights={highlights}
             selectedHighlightId={selectedHighlightId}
             onHighlightClick={(id) => {

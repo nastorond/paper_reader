@@ -108,7 +108,7 @@ export function PdfPage({ doc, index, size, scale, active, highlights, selectedH
     }
     let cancelled = false;
     let task: RenderTask | null = null;
-    (async () => {
+    const render = async () => {
       const page = await doc.getPage(index + 1);
       if (cancelled) return;
       const viewport = page.getViewport({ scale });
@@ -126,9 +126,14 @@ export function PdfPage({ doc, index, size, scale, active, highlights, selectedH
       });
       await task.promise;
       if (!cancelled) host.replaceChildren(canvas);
-    })().catch(reportError);
+    };
+    // 이미 그려진 캔버스가 있으면(=배율 변경) 잠깐 기다렸다 다시 그린다. 두 손가락 확대 중에는
+    // 배율이 계속 바뀌므로, 그동안은 기존 캔버스를 늘려 보여주고 손을 멈춘 뒤 한 번만 선명하게 그린다.
+    const delay = host.childElementCount > 0 ? 150 : 0;
+    const timer = setTimeout(() => void render().catch(reportError), delay);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
       task?.cancel();
     };
   }, [doc, index, scale, active]);
