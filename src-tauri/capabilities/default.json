@@ -1,0 +1,184 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "dialog:allow-confirm",
+    "dialog:allow-save",
+    "sql:default",
+    "sql:allow-execute",
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [
+        {
+          "path": "$HOME/**/*.PDF"
+        },
+        {
+          "path": "$HOME/**/*.pdf"
+        },
+        {
+          "path": "$HOME/**/*.PNG"
+        },
+        {
+          "path": "$HOME/**/*.png"
+        },
+        {
+          "path": "$HOME/**/*.JPG"
+        },
+        {
+          "path": "$HOME/**/*.jpg"
+        },
+        {
+          "path": "$HOME/**/*.JPEG"
+        },
+        {
+          "path": "$HOME/**/*.jpeg"
+        },
+        {
+          "path": "$HOME/**/*.GIF"
+        },
+        {
+          "path": "$HOME/**/*.gif"
+        },
+        {
+          "path": "$HOME/**/*.WEBP"
+        },
+        {
+          "path": "$HOME/**/*.webp"
+        },
+        {
+          "path": "$HOME/**/*.SVG"
+        },
+        {
+          "path": "$HOME/**/*.svg"
+        },
+        {
+          "path": "/Volumes/**/*.PDF"
+        },
+        {
+          "path": "/Volumes/**/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/*.PNG"
+        },
+        {
+          "path": "/Volumes/**/*.png"
+        },
+        {
+          "path": "/Volumes/**/*.JPG"
+        },
+        {
+          "path": "/Volumes/**/*.jpg"
+        },
+        {
+          "path": "/Volumes/**/*.JPEG"
+        },
+        {
+          "path": "/Volumes/**/*.jpeg"
+        },
+        {
+          "path": "/Volumes/**/*.GIF"
+        },
+        {
+          "path": "/Volumes/**/*.gif"
+        },
+        {
+          "path": "/Volumes/**/*.WEBP"
+        },
+        {
+          "path": "/Volumes/**/*.webp"
+        },
+        {
+          "path": "/Volumes/**/*.SVG"
+        },
+        {
+          "path": "/Volumes/**/*.svg"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$HOME/**/*.PDF"
+        },
+        {
+          "path": "$HOME/**/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/*.PDF"
+        },
+        {
+          "path": "/Volumes/**/*.pdf"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        {
+          "path": "$HOME/**/*.md"
+        },
+        {
+          "path": "/Volumes/**/*.md"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "$HOME/**/paperboard-library.zip"
+        },
+        {
+          "path": "$HOME/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "$HOME/**/pdfs/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/pdfs/*.pdf"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-rename",
+      "allow": [
+        {
+          "path": "$HOME/**/paperboard-library.zip"
+        },
+        {
+          "path": "$HOME/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip"
+        },
+        {
+          "path": "/Volumes/**/paperboard-library.zip.tmp"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "$HOME/**/pdfs"
+        },
+        {
+          "path": "/Volumes/**/pdfs"
+        }
+      ]
+    }
+  ]
+}

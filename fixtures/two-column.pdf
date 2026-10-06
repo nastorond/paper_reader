@@ -1,0 +1,298 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Length 3255 >>
+stream
+BT
+/F2 14 Tf 54 738 Td (Attention-Free Reading: A Test Document for Highlight Positioning) Tj
+ET
+BT
+/F1 10 Tf 13 TL 54.0 702 Td
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+ET
+BT
+/F1 10 Tf 13 TL 318.0 702 Td
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 3196 >>
+stream
+BT
+/F2 14 Tf 54 738 Td (Page 2) Tj
+ET
+BT
+/F1 10 Tf 13 TL 54.0 702 Td
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+ET
+BT
+/F1 10 Tf 13 TL 318.0 702 Td
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 3196 >>
+stream
+BT
+/F2 14 Tf 54 738 Td (Page 3) Tj
+ET
+BT
+/F1 10 Tf 13 TL 54.0 702 Td
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+(Abstract. This document exists to test text) Tj T*
+ET
+BT
+/F1 10 Tf 13 TL 318.0 702 Td
+(selection across two columns, multiple lines,) Tj T*
+(and words that are hyphen- ated at the end of a) Tj T*
+(line. Transformer models rely on self-attention) Tj T*
+(to relate tokens.) Tj T*
+() Tj T*
+(1 Introduction. Highlights must stay anchored to) Tj T*
+(the same words when the reader zooms in or out.) Tj T*
+(Coordinates are therefore stored in PDF user) Tj T*
+(space rather than in screen pixels, and) Tj T*
+(converted back with the current viewport.) Tj T*
+() Tj T*
+(The quick brown fox jumps over the lazy dog.) Tj T*
+(Pack my box with five dozen liquor jugs. Sphinx) Tj T*
+(of black quartz, judge my vow. How vexingly) Tj T*
+(quick daft zebras jump. The five boxing wizards) Tj T*
+(jump quickly.) Tj T*
+() Tj T*
+(2 Method. We select a phrase, press H, and) Tj T*
+(expect a note panel to open. Representation) Tj T*
+(learning, contrastive objectives, and positional) Tj T*
+(encod- ing are typical vocabulary items a reader) Tj T*
+(may want to annotate.) Tj T*
+() Tj T*
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000128 00000 n 
+0000000200 00000 n 
+0000000275 00000 n 
+0000003582 00000 n 
+0000003718 00000 n 
+0000006966 00000 n 
+0000007102 00000 n 
+0000010350 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+10487
+%%EOF
