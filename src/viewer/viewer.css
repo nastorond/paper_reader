@@ -207,3 +207,17 @@ button.link {
   background: white;
   border-radius: 8px;
 }
+
+.viewer-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: rgb(24 24 27 / 0.9);
+  color: white;
+  font-size: 14px;
+  z-index: 2;
+}

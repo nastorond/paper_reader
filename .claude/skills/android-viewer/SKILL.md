@@ -43,3 +43,8 @@ boards/<highlightId>.svg   // 보드 탭은 내보낼 때 SVG로 렌더링해 �
 - 사전 준비(없으면 설치하고 보고): Android Studio, Android SDK·NDK, JDK(Android Studio 내장 JBR 사용), rustup Android 타깃. Tauri 공식 문서의 Android 준비 절차를 따른다. 환경변수(`JAVA_HOME`, `ANDROID_HOME`, `NDK_HOME`)는 `scripts/android-env.sh`가 설정하고 `pnpm android …`/`pnpm adb …` 스크립트로만 쓴다(`~/.zshrc` 수정 불필요).
 - `pnpm android init` → `pnpm android build --apk`
 - 설치는 APK 직접 설치(adb 또는 파일 전송). 스토어 배포 안 함.
+- 릴리스 APK: `pnpm android build --apk --target aarch64` → `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk` (약 28MB, 디버그는 약 390MB)
+  - 서명 키: `src-tauri/gen/android/paperboard-release.jks` + `keystore.properties`(비밀번호). 둘 다 git 제외. **잃어버리면 같은 앱으로 업데이트 설치가 안 된다**(지우고 새로 설치해야 하고, 폰의 번들 캐시·선택 파일 정보가 사라진다). 따로 백업한다.
+  - 디버그 APK 와 서명이 달라 서로 덮어쓸 수 없다(전환하려면 `pnpm adb uninstall com.paperboard.app` 후 설치).
+  - 릴리스는 R8 축소가 켜져 있다. Rust 에서 이름으로 찾는 Kotlin 플러그인은 `app/proguard-rules.pro` 의 keep 규칙으로 보존한다(플러그인을 추가하면 규칙도 추가).
+- 번들 선택은 Tauri 기본 파일 선택기 대신 `BundlePickerPlugin.kt`(ACTION_OPEN_DOCUMENT + takePersistableUriPermission)를 쓴다. 기본 선택기로 고른 주소는 앱을 다시 켜면 읽기가 거부된다(실기기 확인).

@@ -18,3 +18,5 @@ keystore.properties
 
 /.tauri
 /tauri.settings.gradle
+# 릴리스 서명 키(저장소에 올리지 않는다. keystore.properties 와 함께 따로 백업)
+*.jks

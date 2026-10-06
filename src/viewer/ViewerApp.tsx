@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { readFile } from "@tauri-apps/plugin-fs";
 import "katex/dist/katex.min.css";
@@ -6,6 +6,7 @@ import { readBundle } from "../bundle/bundleZip";
 import { BUNDLE_SCHEMA_VERSION, type BundleLibrary } from "../bundle/schema";
 import { loadCachedBundle, saveBundleUri, saveCachedBundle, savedBundleUri } from "./cache";
 import { filterVocab, vocabItems, type VocabItem } from "./vocab";
+import { describeDiff, diffLibraries, shouldAutoRefresh } from "./diff";
 import "./viewer.css";
 
 interface Loaded {
@@ -22,9 +23,21 @@ export default function ViewerApp() {
   const [query, setQuery] = useState("");
   const [docFilter, setDocFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<VocabItem | null>(null);
+  // 새로고침 결과 안내("새 하이라이트 2개" 등). 몇 초 뒤 사라진다.
+  const [notice, setNotice] = useState<string | null>(null);
+  const loadedRef = useRef<Loaded | null>(null);
+  loadedRef.current = loaded;
+  const busyRef = useRef(false);
+
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 4000);
+    return () => clearTimeout(t);
+  }, [notice]);
 
   // 바이트 → 화면 상태. 성공하면 캐시에 저장.
-  const apply = useCallback(async (data: Uint8Array, readAt: string, cache: boolean) => {
+  // report: "always" = 결과를 항상 안내(버튼), "changes" = 바뀐 게 있을 때만(자동), "none" = 안내 없음(캐시)
+  const apply = useCallback(async (data: Uint8Array, readAt: string, cache: boolean, report: "always" | "changes" | "none") => {
     const r = readBundle(data);
     if (!r.ok) {
       setMessage(
@@ -34,22 +47,31 @@ export default function ViewerApp() {
       );
       return false;
     }
+    const prev = loadedRef.current?.library;
+    if (prev && report !== "none") {
+      const d = diffLibraries(prev, r.library);
+      const any = d.added + d.removed + d.changed > 0;
+      if (report === "always" || any) setNotice(describeDiff(d, prev.exportedAt === r.library.exportedAt));
+    }
     setLoaded({ library: r.library, boards: r.boards, readAt });
     if (cache) await saveCachedBundle({ data, readAt });
     return true;
   }, []);
 
   const readFrom = useCallback(
-    async (uri: string) => {
+    async (uri: string, report: "always" | "changes" = "always") => {
+      if (busyRef.current) return;
+      busyRef.current = true;
       setBusy(true);
       setMessage(null);
       try {
         const data = await readFile(uri);
-        if (await apply(data, new Date().toISOString(), true)) saveBundleUri(uri);
+        if (await apply(data, new Date().toISOString(), true, report)) saveBundleUri(uri);
       } catch (e) {
         console.error("bundle read failed", uri, e);
         setMessage(`번들을 읽지 못했습니다. 다시 선택해 주세요. (${e instanceof Error ? e.message : String(e)})`);
       } finally {
+        busyRef.current = false;
         setBusy(false);
       }
     },
@@ -67,18 +89,31 @@ export default function ViewerApp() {
 
   const refresh = useCallback(async () => {
     const uri = savedBundleUri();
-    if (uri) await readFrom(uri);
+    if (uri) await readFrom(uri, "always");
     else await pick();
   }, [readFrom, pick]);
+
+  // 다른 앱에 갔다가 돌아오면(화면이 다시 보이면) 자동 새로고침. 1분 안에 읽었으면 건너뛴다.
+  useEffect(() => {
+    const onVisible = () => {
+      const uri = savedBundleUri();
+      if (document.visibilityState !== "visible" || !uri) return;
+      if (shouldAutoRefresh(loadedRef.current?.readAt ?? null, Date.now())) void readFrom(uri, "changes");
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [readFrom]);
 
   // 시작: 캐시를 먼저 보여주고, 저장된 주소가 있으면 최신으로 다시 읽는다.
   useEffect(() => {
     void (async () => {
       const cached = await loadCachedBundle().catch(() => null);
-      if (cached) await apply(cached.data, cached.readAt, false);
-      if (savedBundleUri()) await refresh();
+      if (cached) await apply(cached.data, cached.readAt, false, "none");
+      // 시작할 때는 바뀐 게 있을 때만 안내
+      const uri = savedBundleUri();
+      if (uri) await readFrom(uri, "changes");
     })();
-  }, [apply, refresh]);
+  }, [apply, readFrom]);
 
   // Android 뒤로 가기: 상세를 열 때 기록을 한 단계 쌓고, 뒤로 가기(popstate)면 목록으로 돌아간다.
   const openDetail = useCallback((it: VocabItem) => {
@@ -108,6 +143,7 @@ export default function ViewerApp() {
         </button>
       </header>
       {message && <div className="viewer-message">{message}</div>}
+      {notice && <div className="viewer-notice">{notice}</div>}
       {!loaded ? (
         <div className="viewer-empty">
           <p>맥에서 내보낸 번들 파일(paperboard-library.zip)을 고르세요.</p>
