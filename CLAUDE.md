@@ -119,8 +119,9 @@ Note {
 - 빌드: `pnpm tauri build`
 - 타입체크: `pnpm tsc --noEmit`
 - 테스트: `pnpm vitest run`
+- Android: `pnpm android init|dev|build`, `pnpm adb devices` (환경변수는 `scripts/android-env.sh`가 설정. `~/.zshrc`는 건드리지 않는다)
 
-사전 준비(없으면 안내만 하고 설치는 내게 물어볼 것): Xcode Command Line Tools, Rust(rustup), Node, pnpm.
+사전 준비(없으면 설치하고 보고): Xcode Command Line Tools, Rust(rustup), Node, pnpm. Android 빌드 도구는 `android-viewer` 스킬 참고.
 
 ## 작업 규칙
 
@@ -133,10 +134,12 @@ Note {
   - 테스트용 PDF: `./fixtures/` 안에 둔 파일만 사용
   - `.dev-data/`는 `.gitignore`에 넣는다.
 - 위 규칙에 걸리는 작업이 필요하면 **실행하지 말고 먼저 물어본다.** 예:
-  - Rust·Android SDK 같은 도구 설치(홈 디렉터리에 설치됨) → 명령어만 알려주고 설치는 내가 한다
   - 전역 설정 파일 수정(`~/.zshrc`, `~/.gitconfig`, `~/.cargo/config.toml` 등)
   - 프로젝트 밖 경로를 탐색하는 `find`, `ls`, `cat` 등
-- 예외: pnpm·cargo가 의존성을 설치하면서 자체 캐시(`~/.pnpm-store`, `~/.cargo/registry`)에 쓰는 것은 허용.
+- 예외(묻지 않고 해도 됨):
+  - pnpm·cargo가 의존성을 설치하면서 자체 캐시(`~/.pnpm-store`, `~/.cargo/registry`)에 쓰는 것.
+  - **개발 도구·패키지 설치**: Homebrew(`brew install`), rustup 툴체인·타깃, Android SDK 구성요소(`sdkmanager`, SDK 라이선스 동의 포함) 등. 설치한 뒤 무엇을 설치했는지 짧게 보고한다. 이 도구들이 설치 과정에서 자기 위치(`/opt/homebrew`, `~/.rustup`, `~/Library/Android/sdk` 등)에 쓰는 것과, 설치 확인을 위해 그 위치를 조회하는 것도 허용.
+  - (앱에 넣는 무거운 라이브러리 의존성은 아래 "일반"의 규칙대로 먼저 물어본다.)
 - 완성된 앱이 **실행될 때** 사용자가 고른 PDF를 읽고, `~/Library/Application Support/PaperBoard/`와 설정에서 고른 내보내기 폴더에 쓰는 것은 앱의 정상 동작이다. 이 규칙은 개발 작업(Claude Code)에 대한 것이다.
 
 ### 일반

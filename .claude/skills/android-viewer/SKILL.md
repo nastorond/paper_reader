@@ -40,6 +40,6 @@ boards/<highlightId>.svg   // 보드 탭은 내보낼 때 SVG로 렌더링해 �
 
 ### Android 빌드
 
-- 사전 준비(없으면 안내만): Android Studio, Android SDK·NDK, JDK. Tauri 공식 문서의 Android 준비 절차를 따른다.
-- `pnpm tauri android init` → `pnpm tauri android build --apk`
+- 사전 준비(없으면 설치하고 보고): Android Studio, Android SDK·NDK, JDK(Android Studio 내장 JBR 사용), rustup Android 타깃. Tauri 공식 문서의 Android 준비 절차를 따른다. 환경변수(`JAVA_HOME`, `ANDROID_HOME`, `NDK_HOME`)는 `scripts/android-env.sh`가 설정하고 `pnpm android …`/`pnpm adb …` 스크립트로만 쓴다(`~/.zshrc` 수정 불필요).
+- `pnpm android init` → `pnpm android build --apk`
 - 설치는 APK 직접 설치(adb 또는 파일 전송). 스토어 배포 안 함.

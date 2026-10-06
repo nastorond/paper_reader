@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "android": ". ./scripts/android-env.sh && tauri android",
+    "adb": ". ./scripts/android-env.sh && adb"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
