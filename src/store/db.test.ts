@@ -1,6 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
-import { getNote, insertHighlight, listHighlights, migrate, saveNoteBody, upsertDocument, type SqlDb } from "./db";
+import { getNote, insertHighlight, listHighlights, migrate, saveNoteBoard, saveNoteBody, upsertDocument, type SqlDb } from "./db";
 import type { Highlight } from "./types";
 
 // node:sqlite 를 tauri-plugin-sql 과 같은 모양으로 감싼다.
@@ -87,5 +87,22 @@ describe("db", () => {
 
     db.raw.exec("DELETE FROM highlights WHERE id = 'h1'");
     expect(await getNote(db, "h1")).toBeNull();
+  });
+
+  it("보드와 본문은 서로 덮어쓰지 않는다(보드를 먼저 저장해도 됨)", async () => {
+    const db = memoryDb();
+    await migrate(db);
+    await upsertDocument(db, { id: "doc", path: "/a.pdf", title: "A" }, "2026-10-01T00:00:00Z");
+    await insertHighlight(db, highlight());
+    const board = { type: "excalidraw", elements: [{ id: "e1", type: "rectangle", x: 1, y: 2 }], files: {} };
+    await saveNoteBoard(db, "h1", board, "2026-10-01T00:00:01Z");
+    expect(await getNote(db, "h1")).toEqual({ highlightId: "h1", body: null, board, updatedAt: "2026-10-01T00:00:01Z" });
+
+    const body = { type: "doc", content: [] };
+    await saveNoteBody(db, "h1", body, "2026-10-01T00:00:02Z");
+    await saveNoteBoard(db, "h1", { ...board, elements: [] }, "2026-10-01T00:00:03Z");
+    const note = await getNote(db, "h1");
+    expect(note?.body).toEqual(body);
+    expect(note?.board).toEqual({ ...board, elements: [] });
   });
 });

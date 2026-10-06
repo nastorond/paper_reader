@@ -6,7 +6,7 @@ import "pdfjs-dist/web/pdf_viewer.css";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
-// vite.config.ts 의 copyPdfjsAssets 와 짝을 이룬다.
+// vite.config.ts 의 copyLibraryAssets 와 짝을 이룬다.
 const PDFJS_ASSET_BASE = import.meta.env.DEV ? "/node_modules/pdfjs-dist/" : "/pdfjs/";
 
 export async function loadPdf(data: Uint8Array): Promise<PDFDocumentProxy> {

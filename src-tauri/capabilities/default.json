@@ -14,10 +14,88 @@
       "identifier": "fs:allow-read-file",
       "allow": [
         {
+          "path": "$HOME/**/*.PDF"
+        },
+        {
           "path": "$HOME/**/*.pdf"
         },
         {
+          "path": "$HOME/**/*.PNG"
+        },
+        {
+          "path": "$HOME/**/*.png"
+        },
+        {
+          "path": "$HOME/**/*.JPG"
+        },
+        {
+          "path": "$HOME/**/*.jpg"
+        },
+        {
+          "path": "$HOME/**/*.JPEG"
+        },
+        {
+          "path": "$HOME/**/*.jpeg"
+        },
+        {
+          "path": "$HOME/**/*.GIF"
+        },
+        {
+          "path": "$HOME/**/*.gif"
+        },
+        {
+          "path": "$HOME/**/*.WEBP"
+        },
+        {
+          "path": "$HOME/**/*.webp"
+        },
+        {
+          "path": "$HOME/**/*.SVG"
+        },
+        {
+          "path": "$HOME/**/*.svg"
+        },
+        {
+          "path": "/Volumes/**/*.PDF"
+        },
+        {
           "path": "/Volumes/**/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/*.PNG"
+        },
+        {
+          "path": "/Volumes/**/*.png"
+        },
+        {
+          "path": "/Volumes/**/*.JPG"
+        },
+        {
+          "path": "/Volumes/**/*.jpg"
+        },
+        {
+          "path": "/Volumes/**/*.JPEG"
+        },
+        {
+          "path": "/Volumes/**/*.jpeg"
+        },
+        {
+          "path": "/Volumes/**/*.GIF"
+        },
+        {
+          "path": "/Volumes/**/*.gif"
+        },
+        {
+          "path": "/Volumes/**/*.WEBP"
+        },
+        {
+          "path": "/Volumes/**/*.webp"
+        },
+        {
+          "path": "/Volumes/**/*.SVG"
+        },
+        {
+          "path": "/Volumes/**/*.svg"
         }
       ]
     }

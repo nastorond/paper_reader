@@ -8,8 +8,12 @@ use tauri::Manager;
 #[tauri::command]
 fn db_path(app: tauri::AppHandle) -> Result<String, String> {
     let dir: PathBuf = if cfg!(debug_assertions) {
+        // 개발 자가 테스트는 PAPERBOARD_DEV_DB_DIR 로 별도 폴더를 써서 직접 테스트한 데이터를 건드리지 않는다.
         // env!("CARGO_MANIFEST_DIR") = 컴파일 시점의 src-tauri 폴더 절대 경로
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join(".dev-data")
+        match std::env::var("PAPERBOARD_DEV_DB_DIR") {
+            Ok(custom) if !custom.is_empty() => PathBuf::from(custom),
+            _ => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join(".dev-data"),
+        }
     } else {
         app.path().data_dir().map_err(|e| e.to_string())?.join("PaperBoard")
     };

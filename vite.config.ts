@@ -6,28 +6,28 @@ import react from "@vitejs/plugin-react";
 
 const host = process.env.TAURI_DEV_HOST;
 
-// pdf.js가 런타임에 불러오는 정적 리소스(CJK cmap, 표준 폰트, wasm 디코더).
-// 개발 중에는 Vite가 /node_modules/pdfjs-dist/ 경로를 그대로 서빙하고,
-// 빌드 시에는 dist/pdfjs/ 로 복사한다. (src/pdf/pdfjs.ts 의 PDFJS_ASSET_BASE 참고)
-const PDFJS_ASSET_DIRS = ["cmaps", "standard_fonts", "wasm", "iccs"];
+// 런타임에 불러오는 라이브러리 정적 리소스. 외부 CDN 대신 앱에 포함한다.
+// 개발 중에는 Vite 가 /node_modules/... 경로를 그대로 서빙하고, 빌드 시에는 dist/ 아래로 복사한다.
+// - pdf.js: CJK cmap, 표준 폰트, wasm 디코더 → dist/pdfjs/ (src/pdf/pdfjs.ts 의 PDFJS_ASSET_BASE)
+// - Excalidraw: 손글씨 등 글꼴 → dist/excalidraw/fonts/ (src/note/BoardEditor.tsx 의 EXCALIDRAW_ASSET_PATH)
+const COPIED_ASSETS: [from: string, to: string][] = [
+  ...["cmaps", "standard_fonts", "wasm", "iccs"].map((d): [string, string] => [`pdfjs-dist/${d}`, `pdfjs/${d}`]),
+  ["@excalidraw/excalidraw/dist/prod/fonts", "excalidraw/fonts"],
+];
 
-function copyPdfjsAssets(): Plugin {
+function copyLibraryAssets(): Plugin {
   let root = process.cwd();
   let outDir = "dist";
   return {
-    name: "copy-pdfjs-assets",
+    name: "copy-library-assets",
     apply: "build",
     configResolved(config) {
       root = config.root;
       outDir = resolve(config.root, config.build.outDir);
     },
     closeBundle() {
-      for (const dir of PDFJS_ASSET_DIRS) {
-        cpSync(
-          resolve(root, "node_modules/pdfjs-dist", dir),
-          resolve(outDir, "pdfjs", dir),
-          { recursive: true },
-        );
+      for (const [from, to] of COPIED_ASSETS) {
+        cpSync(resolve(root, "node_modules", from), resolve(outDir, to), { recursive: true });
       }
     },
   };
@@ -55,7 +55,7 @@ function devLogEndpoint(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
-  plugins: [react(), copyPdfjsAssets(), devLogEndpoint()],
+  plugins: [react(), copyLibraryAssets(), devLogEndpoint()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

@@ -86,12 +86,21 @@ export async function getNote(db: SqlDb, highlightId: string): Promise<Note | nu
   return rows[0] ? toNote(rows[0]) : null;
 }
 
-// 노트 본문(TipTap JSON) 저장. 보드(M3)는 건드리지 않는다.
+// 노트 본문(TipTap JSON) 저장. 보드는 건드리지 않는다.
 export async function saveNoteBody(db: SqlDb, highlightId: string, body: unknown, now: string): Promise<void> {
   await db.execute(
     `INSERT INTO notes (highlight_id, body, board, updated_at) VALUES (?, ?, NULL, ?)
      ON CONFLICT(highlight_id) DO UPDATE SET body = excluded.body, updated_at = excluded.updated_at`,
     [highlightId, JSON.stringify(body), now],
+  );
+}
+
+// 보드(Excalidraw 장면 JSON) 저장. 노트 본문이 아직 없으면 null 로 둔다.
+export async function saveNoteBoard(db: SqlDb, highlightId: string, board: unknown, now: string): Promise<void> {
+  await db.execute(
+    `INSERT INTO notes (highlight_id, body, board, updated_at) VALUES (?, 'null', ?, ?)
+     ON CONFLICT(highlight_id) DO UPDATE SET board = excluded.board, updated_at = excluded.updated_at`,
+    [highlightId, JSON.stringify(board), now],
   );
 }
 

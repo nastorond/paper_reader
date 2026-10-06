@@ -224,6 +224,7 @@ button:disabled {
 .note-panel {
   flex: none;
   width: 400px;
+  transition: width 0.15s;
   display: flex;
   flex-direction: column;
   background: var(--panel);
@@ -411,4 +412,15 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 3px 6px;
+}
+
+/* 보드 탭은 넓게 */
+.note-panel.wide {
+  width: min(760px, 58vw);
+}
+
+.board-host {
+  flex: 1;
+  min-height: 0;
+  position: relative;
 }

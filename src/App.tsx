@@ -3,14 +3,15 @@ import { Toolbar } from "./Toolbar";
 import { PdfViewer, type PdfViewerHandle } from "./pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "./pdf/pdfjs";
 import { clampZoom, fitWidthScale, zoomIn, zoomOut } from "./pdf/zoom";
-import { pickPdfPath, readPdfFile } from "./file/openPdf";
-import { useDropPdf } from "./file/useDropPdf";
+import { pickPdfPath, readImageFile, readPdfFile } from "./file/openPdf";
+import { useFileDrop } from "./file/useFileDrop";
+import { dropFilesOnBoard } from "./note/boardDrop";
 import { sha256Hex } from "./file/hash";
 import { getDb } from "./store/tauriDb";
 import { insertHighlight, listHighlights, upsertDocument } from "./store/db";
 import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
-import { NotePanel } from "./note/NotePanel";
+import { NotePanel, type NoteTab } from "./note/NotePanel";
 import "./App.css";
 
 interface OpenDoc {
@@ -32,6 +33,10 @@ export default function App() {
   const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
   // 방금 만든 하이라이트면 노트 편집기에 바로 포커스(핵심 흐름 3번)
   const [focusNoteId, setFocusNoteId] = useState<string | null>(null);
+  // 노트/보드 탭. 다른 하이라이트로 바꿔도 마지막 탭을 유지한다.
+  const [noteTab, setNoteTab] = useState<NoteTab>(
+    import.meta.env.DEV && import.meta.env.VITE_DEV_OPEN_BOARD ? "board" : "note",
+  );
   const selectedHighlight = highlights.find((h) => h.id === selectedHighlightId) ?? null;
   const mainRef = useRef<HTMLElement>(null);
   const viewerRef = useRef<PdfViewerHandle>(null);
@@ -102,6 +107,31 @@ export default function App() {
     return () => clearTimeout(t);
   }, [doc, highlights]);
 
+  // 개발 자가 테스트: 보드에 이미지 넣기(드롭 경로 또는 붙여넣기 경로)
+  useEffect(() => {
+    const path = import.meta.env.DEV ? import.meta.env.VITE_DEV_BOARD_IMAGE : undefined;
+    if (!path || noteTab !== "board" || !selectedHighlightId) return;
+    const t = setTimeout(async () => {
+      const host = document.querySelector(".board-host canvas.interactive") ?? document.querySelector(".board-host");
+      if (!host) return devLog("dev board image: board not found");
+      const r = host.getBoundingClientRect();
+      const file = await readImageFile(path);
+      if (import.meta.env.VITE_DEV_BOARD_IMAGE_MODE === "paste") {
+        // 실제 사용처럼: 보드에 포커스, 마우스가 캔버스 위에 있는 상태에서 붙여넣기
+        document.querySelector<HTMLElement>(".board-host .excalidraw")?.focus();
+        const at = { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true };
+        host.dispatchEvent(new PointerEvent("pointermove", at));
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: dt }));
+        devLog("dev board image: pasted");
+      } else {
+        devLog(`dev board image: dropped=${dropFilesOnBoard([file], r.left + r.width / 2, r.top + r.height / 2)}`);
+      }
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [noteTab, selectedHighlightId]);
+
   useEffect(() => {
     const page = import.meta.env.DEV ? Number(import.meta.env.VITE_DEV_GOTO_PAGE) : NaN;
     if (!doc || !Number.isInteger(page)) return;
@@ -109,7 +139,17 @@ export default function App() {
     return () => clearTimeout(t);
   }, [doc]);
 
-  const dragging = useDropPdf((path) => void openPath(path));
+  const dragTarget = useFileDrop({
+    onPdf: (path) => void openPath(path),
+    onImages: (paths, x, y) => {
+      Promise.all(paths.map(readImageFile))
+        .then((files) => dropFilesOnBoard(files, x, y))
+        .catch((e) => {
+          console.error(e);
+          setError(`이미지를 읽을 수 없습니다: ${e instanceof Error ? e.message : String(e)}`);
+        });
+    },
+  });
 
   const showNotice = useCallback((msg: string) => setNotice(msg), []);
   useEffect(() => {
@@ -148,13 +188,15 @@ export default function App() {
     setHighlights((prev) => [...prev, h]);
     setSelectedHighlightId(h.id);
     setFocusNoteId(h.id);
+    setNoteTab("note");
   }, [doc, showNotice]);
 
   // H: 하이라이트, Esc: 노트 패널 닫기(노트 입력 중에도 동작)
   // e.code 를 쓰는 이유: 한글 입력 상태에서는 e.key 가 "ㅗ" 가 된다.
+  // 보드(Excalidraw) 안의 키 입력은 Excalidraw 단축키(H=손 도구, Esc=선택 해제 등)라 건드리지 않는다.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing || inBoard(e.target)) return;
       if (e.key === "Escape") {
         setSelectedHighlightId(null);
         return;
@@ -175,7 +217,7 @@ export default function App() {
   // 단축키: ⌘O 열기, ⌘= / ⌘- 확대/축소, ⌘0 폭 맞춤
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!e.metaKey) return;
+      if (!e.metaKey || inBoard(e.target)) return;
       if (e.key === "o") {
         e.preventDefault();
         void openDialog();
@@ -247,13 +289,15 @@ export default function App() {
             {error}
           </div>
         )}
-        {dragging && <div className="drop-overlay">여기에 놓아서 열기</div>}
+        {dragTarget === "pdf" && <div className="drop-overlay">여기에 놓아서 열기</div>}
       </main>
       {selectedHighlight && (
         <NotePanel
           key={selectedHighlight.id}
           highlight={selectedHighlight}
           autoFocus={focusNoteId === selectedHighlight.id}
+          tab={noteTab}
+          onTabChange={setNoteTab}
           onClose={() => setSelectedHighlightId(null)}
           onJump={() => viewerRef.current?.scrollToHighlight(selectedHighlight)}
         />
@@ -261,4 +305,8 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+function inBoard(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(".board-host") !== null;
 }

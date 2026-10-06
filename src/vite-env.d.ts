@@ -15,4 +15,11 @@ interface ImportMetaEnv {
   readonly VITE_DEV_TYPE_NOTE?: string;
   // 개발 자가 테스트: PDF 를 연 뒤 첫 하이라이트의 노트를 연다
   readonly VITE_DEV_OPEN_NOTE?: string;
+  // 개발 자가 테스트: 노트를 열 때 보드 탭으로 연다
+  readonly VITE_DEV_OPEN_BOARD?: string;
+  // 개발 자가 테스트: 빈 보드에 도형·텍스트를 그린다
+  readonly VITE_DEV_DRAW?: string;
+  // 개발 자가 테스트: 보드가 열리면 이 이미지 파일을 보드 가운데에 드롭(drop) 또는 붙여넣기(paste)
+  readonly VITE_DEV_BOARD_IMAGE?: string;
+  readonly VITE_DEV_BOARD_IMAGE_MODE?: "drop" | "paste";
 }
