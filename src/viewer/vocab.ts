@@ -55,3 +55,34 @@ export function filterVocab(items: VocabItem[], documentId: string | null, query
     (it) => (!documentId || it.highlight.documentId === documentId) && (!q || it.searchText.includes(q)),
   );
 }
+
+// ---- 논문 탭 ----
+
+export interface PaperSummary {
+  document: BundleLibrary["documents"][number];
+  highlightCount: number;
+  hasPdf: boolean;
+}
+
+// 최근에 연 논문 순. 하이라이트가 없는 논문은 뺀다(단어장 앱이라 볼 게 없다).
+export function paperSummaries(lib: BundleLibrary): PaperSummary[] {
+  const counts = new Map<string, number>();
+  for (const h of lib.highlights) counts.set(h.documentId, (counts.get(h.documentId) ?? 0) + 1);
+  return lib.documents
+    .filter((d) => (counts.get(d.id) ?? 0) > 0)
+    .sort((a, b) => b.lastOpenedAt.localeCompare(a.lastOpenedAt))
+    .map((d) => ({ document: d, highlightCount: counts.get(d.id) ?? 0, hasPdf: !!d.pdf }));
+}
+
+// 한 논문의 하이라이트를 읽는 순서(페이지 → 위에서 아래)로. 좌표가 없으면 만든 순서.
+export function paperItems(items: VocabItem[], documentId: string): VocabItem[] {
+  const top = (it: VocabItem) => Math.max(...(it.highlight.rects ?? [{ y2: 0 }]).map((r) => r.y2));
+  return items
+    .filter((it) => it.highlight.documentId === documentId)
+    .sort(
+      (a, b) =>
+        a.highlight.pageIndex - b.highlight.pageIndex ||
+        top(b) - top(a) ||
+        a.highlight.createdAt.localeCompare(b.highlight.createdAt),
+    );
+}

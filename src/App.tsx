@@ -431,6 +431,7 @@ export default function App() {
           state={bundle.state}
           onSetDir={(d) => void bundle.setDir(d)}
           onSetAuto={(a) => void bundle.setAuto(a)}
+          onSetIncludePdfs={(v) => void bundle.setIncludePdfs(v)}
           onExportNow={() => void bundle.exportNow()}
           onClose={() => setBundleOpen(false)}
         />

@@ -36,7 +36,7 @@ const notes: Note[] = [
 describe("번들 왕복", () => {
   it("만들기 → zip → 읽기: 같은 내용", () => {
     const boardIds = new Set(notes.filter((n) => boardHasContent(n.board)).map((n) => n.highlightId));
-    const library = buildLibrary([doc], [hl("h1"), hl("h2"), hl("h3")], notes, boardIds, "2026-10-06T13:00:00Z");
+    const library = buildLibrary([doc], [hl("h1"), hl("h2"), hl("h3")], notes, boardIds, "2026-10-06T13:00:00Z", new Set(["doc1"]));
     const boards = new Map([[boardSvgPath("h1"), '<svg xmlns="http://www.w3.org/2000/svg"><text>한글</text></svg>']]);
     const zip = writeBundle(library, boards);
 
@@ -56,6 +56,14 @@ describe("번들 왕복", () => {
     expect(h2.note).toBeNull();
     expect(h2.boardSvg).toBeNull();
     expect(h3.note).toBeNull();
+    // 폰에서 원문 위에 그릴 좌표, PDF 원문 경로
+    expect(h1.rects).toEqual([{ x1: 1, y1: 2, x2: 3, y2: 4 }]);
+    expect(read.library.documents[0].pdf).toBe("pdfs/doc1.pdf");
+  });
+
+  it("PDF 를 올리지 않으면 pdf 는 null", () => {
+    const library = buildLibrary([doc], [], [], new Set(), "2026-10-06T13:00:00Z");
+    expect(library.documents[0].pdf).toBeNull();
   });
 
   it("같은 내용이면 같은 바이트(불필요한 Drive 동기화 방지)", () => {

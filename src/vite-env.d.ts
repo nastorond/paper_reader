@@ -29,4 +29,6 @@ interface ImportMetaEnv {
   readonly VITE_DEV_EXPORT_MD?: string;
   // 개발 자가 테스트: 번들 내보내기 폴더(자동 내보내기 켬). 시작하면 한 번 내보낸다.
   readonly VITE_DEV_BUNDLE_DIR?: string;
+  // 개발 자가 테스트: 번들 내보내기에 PDF 원문 포함
+  readonly VITE_DEV_BUNDLE_PDFS?: string;
 }

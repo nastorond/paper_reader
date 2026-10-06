@@ -143,6 +143,12 @@
         },
         {
           "path": "/Volumes/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "$HOME/**/pdfs/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/pdfs/*.pdf"
         }
       ]
     },
@@ -160,6 +166,17 @@
         },
         {
           "path": "/Volumes/**/paperboard-library.zip.tmp"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "$HOME/**/pdfs"
+        },
+        {
+          "path": "/Volumes/**/pdfs"
         }
       ]
     }

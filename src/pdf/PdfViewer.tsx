@@ -4,6 +4,7 @@ import { PdfPage, type PageSize } from "./PdfPage";
 import { anchorToScrollTop, currentPageIndex, makeAnchor, type ScrollAnchor } from "./pageTracking";
 import { draftFromSelection, type DraftResult } from "../highlight/fromSelection";
 import { pdfRectToPercent } from "../highlight/geometry";
+import "./pdf.css";
 import type { Highlight } from "../store/types";
 
 export interface PdfViewerHandle {
@@ -21,13 +22,24 @@ interface Props {
   highlights: Highlight[];
   selectedHighlightId: string | null;
   onHighlightClick(id: string | null): void;
+  // 처음 열릴 때 이 하이라이트 위치로 스크롤(폰 "원문 보기")
+  focusHighlightId?: string;
   ref?: Ref<PdfViewerHandle>;
 }
 
 const NO_HIGHLIGHTS: Highlight[] = [];
 
 // 모든 페이지를 세로로 이어 붙인 스크롤 뷰. 화면 근처 페이지만 실제로 렌더링한다.
-export function PdfViewer({ doc, scale, onPageChange, highlights, selectedHighlightId, onHighlightClick, ref }: Props) {
+export function PdfViewer({
+  doc,
+  scale,
+  onPageChange,
+  highlights,
+  selectedHighlightId,
+  onHighlightClick,
+  focusHighlightId,
+  ref,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [sizes, setSizes] = useState<PageSize[] | null>(null);
   const [active, setActive] = useState<Set<number>>(() => new Set());
@@ -71,6 +83,22 @@ export function PdfViewer({ doc, scale, onPageChange, highlights, selectedHighli
     anchorRef.current = makeAnchor(tops, heights, el.scrollTop);
     onPageChange(currentPageIndex(tops, el.scrollTop, el.clientHeight));
   }, [measure, onPageChange]);
+
+  // 페이지 크기를 구한 뒤 한 번, focusHighlightId 위치로 스크롤하도록 앵커를 맞춘다(아래 3번 effect 가 적용).
+  const focusedRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!sizes || focusedRef.current || !focusHighlightId) return;
+    const h = highlights.find((x) => x.id === focusHighlightId);
+    const vp = h && sizes[h.pageIndex]?.viewport;
+    if (!h || !vp || h.rects.length === 0) return;
+    focusedRef.current = true;
+    const top = Math.min(...h.rects.map((r) => pdfRectToPercent(r, vp).top)) / 100;
+    // 화면 위쪽 1/4 지점에 오도록 페이지 높이 비율로 앵커를 잡는다
+    const el = scrollRef.current;
+    const pageH = sizes[h.pageIndex].height * scale;
+    const back = el ? el.clientHeight / 4 / pageH : 0;
+    anchorRef.current = { pageIndex: h.pageIndex, offsetRatio: Math.max(0, top - back) };
+  }, [sizes, focusHighlightId, highlights, scale]);
 
   // 3) 배율이 바뀌면 DOM 크기가 바뀐 직후(그리기 전) 같은 내용이 보이도록 스크롤을 맞춘다.
   //    useLayoutEffect 는 브라우저가 화면을 그리기 전에 동기 실행되어 튀는 게 안 보인다.

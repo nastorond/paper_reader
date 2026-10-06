@@ -64,6 +64,62 @@ async fn pick_bundle(app: tauri::AppHandle) -> Result<PickedBundle, String> {
     }
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct FolderItem {
+    document_id: String,
+    name: String,
+    mime: Option<String>,
+    size: Option<i64>,
+    uri: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FolderListing {
+    items: Vec<FolderItem>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ListFolderArgs {
+    tree_uri: String,
+    document_id: Option<String>,
+}
+
+// Android 뷰어: PaperBoard 폴더 고르기(영구 읽기 권한). Kotlin 의 pickFolder.
+#[tauri::command]
+async fn pick_folder(app: tauri::AppHandle) -> Result<PickedBundle, String> {
+    #[cfg(target_os = "android")]
+    {
+        let picker = app.state::<BundlePicker>();
+        picker.0.run_mobile_plugin_async::<PickedBundle>("pickFolder", ()).await.map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = app;
+        Err("pick_folder 는 Android 전용입니다".into())
+    }
+}
+
+// Android 뷰어: 고른 폴더(또는 그 하위 폴더)의 항목 나열. Kotlin 의 listFolder.
+#[tauri::command]
+async fn list_folder(app: tauri::AppHandle, tree_uri: String, document_id: Option<String>) -> Result<FolderListing, String> {
+    #[cfg(target_os = "android")]
+    {
+        let picker = app.state::<BundlePicker>();
+        picker
+            .0
+            .run_mobile_plugin_async::<FolderListing>("listFolder", ListFolderArgs { tree_uri, document_id })
+            .await
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = (app, ListFolderArgs { tree_uri, document_id });
+        Err("list_folder 는 Android 전용입니다".into())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 플러그인 등록 + DB 경로 명령. 파일 열기·읽기·SQL 실행은 프론트엔드(TS)에서
@@ -76,7 +132,7 @@ pub fn run() {
     #[cfg(target_os = "android")]
     let builder = builder.plugin(bundle_picker_plugin());
     builder
-        .invoke_handler(tauri::generate_handler![db_path, pick_bundle])
+        .invoke_handler(tauri::generate_handler![db_path, pick_bundle, pick_folder, list_folder])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
