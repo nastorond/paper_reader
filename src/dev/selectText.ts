@@ -3,7 +3,7 @@ import { devLog } from "./devLog";
 // 개발 자가 테스트: 텍스트 레이어에서 needle 을 찾아(없으면 아무것도 안 함) 브라우저 선택 영역으로 잡는다.
 // 마우스 드래그와 같은 선택 하이라이트가 그려지므로, 화면 캡처로 글자와 맞는지 확인할 수 있다.
 // 텍스트 레이어는 단어마다 span 이 나뉘므로 여러 텍스트 노드에 걸친 문구도 찾는다.
-export function selectTextInLayer(container: HTMLElement, needle: string): void {
+export function selectTextInLayer(container: HTMLElement, needle: string): boolean {
   const nodes: Text[] = [];
   const starts: number[] = [];
   let all = "";
@@ -14,7 +14,7 @@ export function selectTextInLayer(container: HTMLElement, needle: string): void 
     all += n.textContent ?? "";
   }
   const at = all.indexOf(needle);
-  if (at < 0) return;
+  if (at < 0) return false;
 
   const locate = (offset: number): [Text, number] => {
     let i = starts.length - 1;
@@ -30,4 +30,5 @@ export function selectTextInLayer(container: HTMLElement, needle: string): void 
   sel?.addRange(range);
   const r = range.getBoundingClientRect();
   devLog(`selected "${needle}" at x=${r.x.toFixed(1)} y=${r.y.toFixed(1)} w=${r.width.toFixed(1)} h=${r.height.toFixed(1)}`);
+  return true;
 }

@@ -5,9 +5,15 @@ import { loadPdf, type PDFDocumentProxy } from "./pdf/pdfjs";
 import { clampZoom, fitWidthScale, zoomIn, zoomOut } from "./pdf/zoom";
 import { pickPdfPath, readPdfFile } from "./file/openPdf";
 import { useDropPdf } from "./file/useDropPdf";
+import { sha256Hex } from "./file/hash";
+import { getDb } from "./store/tauriDb";
+import { insertHighlight, listHighlights, upsertDocument } from "./store/db";
+import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
+import { devLog } from "./dev/devLog";
 import "./App.css";
 
 interface OpenDoc {
+  id: string; // 내용 SHA-256
   path: string;
   title: string;
   pdf: PDFDocumentProxy;
@@ -20,6 +26,9 @@ export default function App() {
   const [pageIndex, setPageIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
   const mainRef = useRef<HTMLElement>(null);
   const viewerRef = useRef<PdfViewerHandle>(null);
 
@@ -34,12 +43,20 @@ export default function App() {
       setError(null);
       try {
         const file = await readPdfFile(path);
+        // loadPdf 가 데이터를 워커로 넘기면(transfer) 원본 버퍼가 비므로 해시를 먼저 구한다.
+        const id = await sha256Hex(file.data);
         const pdf = await loadPdf(file.data);
         const first = await pdf.getPage(1);
         const firstPageWidth = first.getViewport({ scale: 1 }).width;
         const meta = await pdf.getMetadata().catch(() => null);
         const infoTitle = (meta?.info as { Title?: string } | undefined)?.Title?.trim();
-        setDoc({ path, title: infoTitle || file.name, pdf, firstPageWidth });
+        const db = await getDb();
+        const record = await upsertDocument(db, { id, path, title: infoTitle || file.name }, new Date().toISOString());
+        const saved = await listHighlights(db, id);
+        devLog(`opened ${record.title}: ${saved.length} highlights`);
+        setDoc({ id, path, title: record.title, pdf, firstPageWidth });
+        setHighlights(saved);
+        setSelectedHighlightId(null);
         setPageIndex(0);
         fitWidth(firstPageWidth);
       } catch (e) {
@@ -75,7 +92,70 @@ export default function App() {
     return () => clearTimeout(t);
   }, [doc]);
 
+  useEffect(() => {
+    const page = import.meta.env.DEV ? Number(import.meta.env.VITE_DEV_GOTO_PAGE) : NaN;
+    if (!doc || !Number.isInteger(page)) return;
+    const t = setTimeout(() => viewerRef.current?.scrollToPage(page - 1), 500);
+    return () => clearTimeout(t);
+  }, [doc]);
+
   const dragging = useDropPdf((path) => void openPath(path));
+
+  const showNotice = useCallback((msg: string) => setNotice(msg), []);
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 2500);
+    return () => clearTimeout(t);
+  }, [notice]);
+
+  // 선택 영역 → 하이라이트 저장
+  const createHighlight = useCallback(async () => {
+    if (!doc) return;
+    const result = viewerRef.current?.draftFromSelection();
+    if (!result) return;
+    if (!result.ok) {
+      showNotice(
+        result.reason === "cross-page" ? "한 페이지 안에서만 하이라이트할 수 있습니다." : "하이라이트할 문구를 먼저 선택하세요.",
+      );
+      return;
+    }
+    const h: Highlight = {
+      id: crypto.randomUUID(),
+      documentId: doc.id,
+      ...result.draft,
+      color: DEFAULT_HIGHLIGHT_COLOR,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      await insertHighlight(await getDb(), h);
+    } catch (e) {
+      console.error(e);
+      setError(`하이라이트를 저장하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+      return;
+    }
+    devLog(`highlight saved p${h.pageIndex + 1} "${h.text}" rects=${JSON.stringify(h.rects)}`);
+    window.getSelection()?.removeAllRanges();
+    setHighlights((prev) => [...prev, h]);
+    setSelectedHighlightId(h.id);
+  }, [doc, showNotice]);
+
+  // H: 하이라이트, Esc: 선택 해제 (M2 에서 노트 패널 닫기로 확장)
+  // e.code 를 쓰는 이유: 한글 입력 상태에서는 e.key 가 "ㅗ" 가 된다.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.code === "KeyH") {
+        e.preventDefault();
+        void createHighlight();
+      } else if (e.key === "Escape") {
+        setSelectedHighlightId(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [createHighlight]);
 
   const goToPage = useCallback((index: number) => viewerRef.current?.scrollToPage(index), []);
 
@@ -124,10 +204,19 @@ export default function App() {
         onZoomIn={() => setScale(zoomIn)}
         onZoomOut={() => setScale(zoomOut)}
         onFitWidth={() => doc && fitWidth(doc.firstPageWidth)}
+        onHighlight={() => void createHighlight()}
       />
       <main className="main" ref={mainRef}>
         {doc ? (
-          <PdfViewer ref={viewerRef} doc={doc.pdf} scale={scale} onPageChange={setPageIndex} />
+          <PdfViewer
+            ref={viewerRef}
+            doc={doc.pdf}
+            scale={scale}
+            onPageChange={setPageIndex}
+            highlights={highlights}
+            selectedHighlightId={selectedHighlightId}
+            onHighlightClick={setSelectedHighlightId}
+          />
         ) : (
           <div className="empty">
             <p>PDF 파일을 열거나 이 창에 끌어다 놓으세요.</p>
@@ -135,6 +224,7 @@ export default function App() {
           </div>
         )}
         {loading && <div className="status">불러오는 중…</div>}
+        {notice && !loading && <div className="status">{notice}</div>}
         {error && (
           <div className="status error" onClick={() => setError(null)}>
             {error}

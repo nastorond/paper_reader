@@ -13,12 +13,17 @@ import {
 import type { PDFPageProxy } from "pdfjs-dist/types/src/display/api";
 import { buildSegments, extractGlyphs, type FontLike, type TextSegment } from "./glyphLayout";
 import { renderSegmentTextLayer } from "./segmentTextLayer";
+import { HighlightLayer } from "../highlight/HighlightLayer";
+import { pdfRectToPercent, percentContains, type ViewportLike } from "../highlight/geometry";
+import type { Highlight } from "../store/types";
 
 export interface PageSize {
   // scale 1 기준 크기(CSS px = PDF pt × userUnit)
   width: number;
   height: number;
   userUnit: number;
+  // 배율 1 viewport (하이라이트 좌표 변환용)
+  viewport: ViewportLike;
 }
 
 interface Props {
@@ -28,11 +33,14 @@ interface Props {
   scale: number;
   // 화면 근처에 있을 때만 캔버스·텍스트 레이어를 만든다(메모리 절약).
   active: boolean;
+  highlights: Highlight[];
+  selectedHighlightId: string | null;
+  onHighlightClick(id: string | null): void;
 }
 
 // 한 페이지 = 캔버스(그림) + 텍스트 레이어(투명 글자, 선택·검색용) 를 겹친 것.
-// 하이라이트 오버레이(M1)는 이 위에 레이어를 하나 더 얹을 예정.
-export function PdfPage({ doc, index, size, scale, active }: Props) {
+// 하이라이트 색 레이어는 둘 사이에 깔린다(HighlightLayer.tsx).
+export function PdfPage({ doc, index, size, scale, active, highlights, selectedHighlightId, onHighlightClick }: Props) {
   const canvasHostRef = useRef<HTMLDivElement>(null);
   const textLayerDivRef = useRef<HTMLDivElement>(null);
   const textLayerRef = useRef<TextLayer | null>(null);
@@ -75,7 +83,10 @@ export function PdfPage({ doc, index, size, scale, active }: Props) {
       if (import.meta.env.DEV) {
         reportTextLayer(index, container, segments, layer ? "pdfjs" : "segments", scaleRef.current);
         const needle = import.meta.env.VITE_DEV_SELECT_TEXT;
-        if (needle) selectTextInLayer(container, needle);
+        if (needle && selectTextInLayer(container, needle) && import.meta.env.VITE_DEV_PRESS_H) {
+          // 자가 테스트: 선택 후 H 키를 누른 것처럼 이벤트를 보낸다.
+          setTimeout(() => window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyH", key: "h" })), 300);
+        }
       }
     })().catch(reportError);
     return () => {
@@ -122,10 +133,24 @@ export function PdfPage({ doc, index, size, scale, active }: Props) {
     };
   }, [doc, index, scale, active]);
 
+  // 클릭(드래그가 아닌)한 지점에 하이라이트가 있으면 선택한다. 레이어가 클릭을 가로채지 않으므로
+  // 텍스트 선택은 그대로 되고, 판정만 좌표로 한다. 겹치면 나중에 만든 것이 우선.
+  const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!window.getSelection()?.isCollapsed) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = (100 * (e.clientX - r.left)) / r.width;
+    const y = (100 * (e.clientY - r.top)) / r.height;
+    const hit = [...highlights]
+      .reverse()
+      .find((h) => h.rects.some((rect) => percentContains(pdfRectToPercent(rect, size.viewport), x, y)));
+    onHighlightClick(hit?.id ?? null);
+  };
+
   return (
     <div
       className="pdf-page"
       data-page-index={index}
+      onClick={onClick}
       style={
         {
           width: Math.floor(size.width * scale),
@@ -139,6 +164,7 @@ export function PdfPage({ doc, index, size, scale, active }: Props) {
       }
     >
       <div className="pdf-canvas" ref={canvasHostRef} />
+      <HighlightLayer highlights={highlights} viewport={size.viewport} selectedId={selectedHighlightId} />
       <div className="textLayer" ref={textLayerDivRef} />
     </div>
   );
@@ -160,7 +186,7 @@ async function readSegments(page: PDFPageProxy): Promise<TextSegment[]> {
 // 개발 진단: 텍스트 레이어 span 의 실제 폭이 PDF 상 폭(× 배율)과 맞는지 터미널로 보고한다.
 function reportTextLayer(index: number, container: HTMLElement, segments: TextSegment[], mode: string, scale: number) {
   requestAnimationFrame(() => {
-    const spans = Array.from(container.querySelectorAll<HTMLElement>("span"));
+    const spans = Array.from(container.querySelectorAll<HTMLElement>("span:not(.eol)"));
     const errors: number[] = [];
     if (mode === "segments") {
       spans.forEach((span, i) => {

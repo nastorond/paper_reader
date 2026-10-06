@@ -1,21 +1,30 @@
-import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
 import type { PDFDocumentProxy } from "./pdfjs";
 import { PdfPage, type PageSize } from "./PdfPage";
 import { anchorToScrollTop, currentPageIndex, makeAnchor, type ScrollAnchor } from "./pageTracking";
+import { draftFromSelection, type DraftResult } from "../highlight/fromSelection";
+import type { Highlight } from "../store/types";
 
 export interface PdfViewerHandle {
   scrollToPage(index: number): void;
+  // 현재 텍스트 선택 영역을 하이라이트 초안(PDF 좌표)으로 만든다.
+  draftFromSelection(): DraftResult;
 }
 
 interface Props {
   doc: PDFDocumentProxy;
   scale: number;
   onPageChange(index: number): void;
+  highlights: Highlight[];
+  selectedHighlightId: string | null;
+  onHighlightClick(id: string | null): void;
   ref?: Ref<PdfViewerHandle>;
 }
 
+const NO_HIGHLIGHTS: Highlight[] = [];
+
 // 모든 페이지를 세로로 이어 붙인 스크롤 뷰. 화면 근처 페이지만 실제로 렌더링한다.
-export function PdfViewer({ doc, scale, onPageChange, ref }: Props) {
+export function PdfViewer({ doc, scale, onPageChange, highlights, selectedHighlightId, onHighlightClick, ref }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [sizes, setSizes] = useState<PageSize[] | null>(null);
   const [active, setActive] = useState<Set<number>>(() => new Set());
@@ -32,7 +41,7 @@ export function PdfViewer({ doc, scale, onPageChange, ref }: Props) {
       for (let i = 1; i <= doc.numPages; i++) {
         const page = await doc.getPage(i);
         const vp = page.getViewport({ scale: 1 });
-        result.push({ width: vp.width, height: vp.height, userUnit: page.userUnit });
+        result.push({ width: vp.width, height: vp.height, userUnit: page.userUnit, viewport: vp });
       }
       if (!cancelled) setSizes(result);
     })().catch(console.error);
@@ -91,6 +100,17 @@ export function PdfViewer({ doc, scale, onPageChange, ref }: Props) {
     return () => observer.disconnect();
   }, [sizes]);
 
+  // 페이지별로 나눠 두면 다른 페이지의 하이라이트가 바뀔 때 배열 참조가 유지된다.
+  const byPage = useMemo(() => {
+    const map = new Map<number, Highlight[]>();
+    for (const h of highlights) {
+      const list = map.get(h.pageIndex);
+      if (list) list.push(h);
+      else map.set(h.pageIndex, [h]);
+    }
+    return map;
+  }, [highlights]);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -100,15 +120,28 @@ export function PdfViewer({ doc, scale, onPageChange, ref }: Props) {
         const page = el.querySelector<HTMLElement>(`.pdf-page[data-page-index="${index}"]`);
         if (page) el.scrollTop = page.offsetTop - 12;
       },
+      draftFromSelection() {
+        return draftFromSelection((i) => sizes?.[i]?.viewport);
+      },
     }),
-    [],
+    [sizes],
   );
 
   return (
     <div className="pdf-scroll" ref={scrollRef} onScroll={onScroll}>
       <div className="pdf-pages">
         {sizes?.map((size, i) => (
-          <PdfPage key={i} doc={doc} index={i} size={size} scale={scale} active={active.has(i)} />
+          <PdfPage
+            key={i}
+            doc={doc}
+            index={i}
+            size={size}
+            scale={scale}
+            active={active.has(i)}
+            highlights={byPage.get(i) ?? NO_HIGHLIGHTS}
+            selectedHighlightId={selectedHighlightId}
+            onHighlightClick={onHighlightClick}
+          />
         ))}
       </div>
     </div>

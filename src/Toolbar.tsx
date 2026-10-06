@@ -10,6 +10,7 @@ interface Props {
   onZoomIn(): void;
   onZoomOut(): void;
   onFitWidth(): void;
+  onHighlight(): void;
 }
 
 export function Toolbar(props: Props) {
@@ -62,6 +63,17 @@ export function Toolbar(props: Props) {
         </button>
         <button disabled={!hasDoc} onClick={props.onFitWidth} title="폭 맞춤 (⌘0)">
           폭 맞춤
+        </button>
+      </div>
+      <div className="toolbar-group">
+        {/* mousedown 기본 동작을 막아야 버튼을 눌러도 본문 선택 영역이 유지된다 */}
+        <button
+          disabled={!hasDoc}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={props.onHighlight}
+          title="선택한 문구 하이라이트 (H)"
+        >
+          하이라이트
         </button>
       </div>
       <div className="toolbar-title" title={title ?? undefined}>

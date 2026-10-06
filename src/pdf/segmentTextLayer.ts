@@ -91,6 +91,12 @@ export function renderSegmentTextLayer(
     }
     frag.append(span);
     if (seg.endOfLine) {
+      // 줄바꿈 자리에 크기 0 인 공백을 둔다. <br> 은 선택 문자열(Range.toString)에 안 들어가서
+      // 여러 줄을 선택하면 "end of a" + "line" 이 "aline" 으로 붙기 때문.
+      const eol = document.createElement("span");
+      eol.className = "eol";
+      eol.textContent = " ";
+      frag.append(eol);
       const br = document.createElement("br");
       br.setAttribute("role", "presentation");
       frag.append(br);

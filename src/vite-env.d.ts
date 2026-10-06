@@ -7,4 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_DEV_SELECT_TEXT?: string;
   // 개발 자가 테스트: PDF를 연 뒤 1.5초 후 이 배율로 바꾼다(확대/축소 경로 확인용)
   readonly VITE_DEV_ZOOM?: string;
+  // 개발 자가 테스트: VITE_DEV_SELECT_TEXT 로 선택한 뒤 H 키를 누른 것처럼 한다(하이라이트 생성)
+  readonly VITE_DEV_PRESS_H?: string;
+  // 개발 자가 테스트: PDF 를 연 뒤 이 페이지(1부터)로 이동한다
+  readonly VITE_DEV_GOTO_PAGE?: string;
 }
