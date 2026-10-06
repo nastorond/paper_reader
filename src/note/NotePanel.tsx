@@ -4,7 +4,7 @@ import { NoteEditor } from "./NoteEditor";
 import { createDebouncedSaver } from "./debouncedSaver";
 import { getDb } from "../store/tauriDb";
 import { getNote, saveNoteBoard, saveNoteBody } from "../store/db";
-import type { Highlight } from "../store/types";
+import { HIGHLIGHT_COLORS, type Highlight } from "../store/types";
 import { devLog } from "../dev/devLog";
 
 // Excalidraw 는 무거워서 보드 탭을 처음 열 때 불러온다.
@@ -19,12 +19,14 @@ interface Props {
   onTabChange(tab: NoteTab): void;
   onClose(): void;
   onJump(): void;
+  onColorChange(color: string): void;
+  onDelete(): void;
 }
 
 type SaveState = "idle" | "editing" | "saved" | "error";
 
 // 오른쪽 노트 패널. 하이라이트마다 key 로 새로 만들어지므로(App.tsx) 상태가 섞이지 않는다.
-export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJump }: Props) {
+export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJump, onColorChange, onDelete }: Props) {
   const [loaded, setLoaded] = useState(false);
   // 탭을 바꾸면 편집기가 다시 만들어지므로, 최신 내용을 ref 에 들고 있다가 초기값으로 넘긴다.
   const bodyRef = useRef<JSONContent | null>(null);
@@ -88,6 +90,20 @@ export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJ
       </header>
       <div className="note-meta">
         <span>p.{highlight.pageIndex + 1}</span>
+        <span className="note-colors">
+          {HIGHLIGHT_COLORS.map((c) => (
+            <button
+              key={c.value}
+              className={c.value === highlight.color ? "swatch active" : "swatch"}
+              style={{ background: c.value }}
+              title={c.name}
+              onClick={() => onColorChange(c.value)}
+            />
+          ))}
+        </span>
+        <button className="note-delete" onClick={onDelete} title="하이라이트와 노트 삭제">
+          삭제
+        </button>
         <span className={`save-state ${saveState}`}>
           {saveState === "editing" ? "편집 중…" : saveState === "saved" ? "저장됨" : saveState === "error" ? "저장 실패" : ""}
         </span>

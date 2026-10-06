@@ -1,6 +1,17 @@
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
-import { getNote, insertHighlight, listHighlights, migrate, saveNoteBoard, saveNoteBody, upsertDocument, type SqlDb } from "./db";
+import {
+  deleteHighlight,
+  getNote,
+  insertHighlight,
+  listHighlights,
+  migrate,
+  saveNoteBoard,
+  saveNoteBody,
+  updateHighlightColor,
+  upsertDocument,
+  type SqlDb,
+} from "./db";
 import type { Highlight } from "./types";
 
 // node:sqlite 를 tauri-plugin-sql 과 같은 모양으로 감싼다.
@@ -104,5 +115,23 @@ describe("db", () => {
     const note = await getNote(db, "h1");
     expect(note?.body).toEqual(body);
     expect(note?.board).toEqual({ ...board, elements: [] });
+  });
+
+  it("색상 변경, 삭제하면 노트(본문·보드)도 함께 지워진다", async () => {
+    const db = memoryDb();
+    await migrate(db);
+    await upsertDocument(db, { id: "doc", path: "/a.pdf", title: "A" }, "2026-10-01T00:00:00Z");
+    await insertHighlight(db, highlight());
+    await insertHighlight(db, highlight({ id: "h2" }));
+    await saveNoteBody(db, "h1", { type: "doc" }, "2026-10-01T00:00:01Z");
+    await saveNoteBoard(db, "h1", { elements: [] }, "2026-10-01T00:00:02Z");
+
+    await updateHighlightColor(db, "h1", "#86efac");
+    expect((await listHighlights(db, "doc")).find((h) => h.id === "h1")?.color).toBe("#86efac");
+
+    await deleteHighlight(db, "h1");
+    expect((await listHighlights(db, "doc")).map((h) => h.id)).toEqual(["h2"]);
+    expect(await getNote(db, "h1")).toBeNull();
+    expect(db.raw.prepare("SELECT COUNT(*) AS n FROM notes").get()).toEqual({ n: 0 });
   });
 });

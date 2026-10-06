@@ -35,4 +35,13 @@ export interface Note {
   updatedAt: string;
 }
 
-export const DEFAULT_HIGHLIGHT_COLOR = "#fde047";
+// 하이라이트 색(화면에서 mix-blend-mode: multiply 로 칠해진다). 첫 번째가 기본값.
+export const HIGHLIGHT_COLORS = [
+  { value: "#fde047", name: "노랑" },
+  { value: "#86efac", name: "초록" },
+  { value: "#93c5fd", name: "파랑" },
+  { value: "#f9a8d4", name: "분홍" },
+  { value: "#fdba74", name: "주황" },
+] as const;
+
+export const DEFAULT_HIGHLIGHT_COLOR = HIGHLIGHT_COLORS[0].value;

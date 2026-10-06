@@ -22,4 +22,7 @@ interface ImportMetaEnv {
   // 개발 자가 테스트: 보드가 열리면 이 이미지 파일을 보드 가운데에 드롭(drop) 또는 붙여넣기(paste)
   readonly VITE_DEV_BOARD_IMAGE?: string;
   readonly VITE_DEV_BOARD_IMAGE_MODE?: "drop" | "paste";
+  // 개발 자가 테스트: 목록 첫 하이라이트의 색을 바꾸거나(값=색) 확인창 없이 삭제한다
+  readonly VITE_DEV_COLOR_FIRST?: string;
+  readonly VITE_DEV_DELETE_FIRST?: string;
 }

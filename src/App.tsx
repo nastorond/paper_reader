@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { Toolbar } from "./Toolbar";
 import { PdfViewer, type PdfViewerHandle } from "./pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "./pdf/pdfjs";
@@ -8,10 +9,12 @@ import { useFileDrop } from "./file/useFileDrop";
 import { dropFilesOnBoard } from "./note/boardDrop";
 import { sha256Hex } from "./file/hash";
 import { getDb } from "./store/tauriDb";
-import { insertHighlight, listHighlights, upsertDocument } from "./store/db";
+import { deleteHighlight, insertHighlight, listHighlights, updateHighlightColor, upsertDocument } from "./store/db";
 import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
 import { NotePanel, type NoteTab } from "./note/NotePanel";
+import { HighlightList } from "./sidebar/HighlightList";
+import { readingOrder } from "./sidebar/order";
 import "./App.css";
 
 interface OpenDoc {
@@ -37,6 +40,8 @@ export default function App() {
   const [noteTab, setNoteTab] = useState<NoteTab>(
     import.meta.env.DEV && import.meta.env.VITE_DEV_OPEN_BOARD ? "board" : "note",
   );
+  const [listOpen, setListOpen] = useState(true);
+  const orderedHighlights = useMemo(() => readingOrder(highlights), [highlights]);
   const selectedHighlight = highlights.find((h) => h.id === selectedHighlightId) ?? null;
   const mainRef = useRef<HTMLElement>(null);
   const viewerRef = useRef<PdfViewerHandle>(null);
@@ -191,6 +196,65 @@ export default function App() {
     setNoteTab("note");
   }, [doc, showNotice]);
 
+  // 목록에서 고르기: 본문 위치로 이동 + 노트 열기
+  const openHighlight = useCallback((h: Highlight) => {
+    setSelectedHighlightId(h.id);
+    setFocusNoteId(null);
+    viewerRef.current?.scrollToHighlight(h);
+  }, []);
+
+  const changeColor = useCallback(async (id: string, color: string) => {
+    setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, color } : h)));
+    try {
+      await updateHighlightColor(await getDb(), id, color);
+    } catch (e) {
+      console.error(e);
+      setError(`색상을 저장하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }, []);
+
+  // 확인 없이 삭제(확인창은 requestDelete). 열려 있던 노트 패널은 먼저 닫아서
+  // 남은 노트 변경이 저장된 뒤 지워지게 한다(노트는 외래 키로 함께 삭제).
+  const removeHighlight = useCallback(async (h: Highlight) => {
+    setSelectedHighlightId((cur) => (cur === h.id ? null : cur));
+    await new Promise((r) => setTimeout(r, 0));
+    try {
+      await deleteHighlight(await getDb(), h.id);
+      setHighlights((prev) => prev.filter((x) => x.id !== h.id));
+      devLog(`highlight deleted ${h.id} "${h.text}"`);
+    } catch (e) {
+      console.error(e);
+      setError(`삭제하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }, []);
+
+  const requestDelete = useCallback(
+    async (h: Highlight) => {
+      const short = h.text.length > 60 ? `${h.text.slice(0, 60)}…` : h.text;
+      const ok = await confirm(`“${short}”\n\n이 하이라이트와 노트(보드 포함)를 삭제할까요? 되돌릴 수 없습니다.`, {
+        title: "하이라이트 삭제",
+        kind: "warning",
+        okLabel: "삭제",
+        cancelLabel: "취소",
+      });
+      if (ok) await removeHighlight(h);
+    },
+    [removeHighlight],
+  );
+
+  // 개발 자가 테스트: 첫 하이라이트(목록 순) 색 바꾸기 / 확인창 없이 삭제
+  const devEditedRef = useRef(false);
+  useEffect(() => {
+    if (!import.meta.env.DEV || !doc || orderedHighlights.length === 0 || devEditedRef.current) return;
+    const color = import.meta.env.VITE_DEV_COLOR_FIRST;
+    const del = import.meta.env.VITE_DEV_DELETE_FIRST;
+    if (!color && !del) return;
+    devEditedRef.current = true;
+    const first = orderedHighlights[0];
+    const t = setTimeout(() => void (del ? removeHighlight(first) : changeColor(first.id, color!)), 1000);
+    return () => clearTimeout(t);
+  }, [doc, orderedHighlights, removeHighlight, changeColor]);
+
   // H: 하이라이트, Esc: 노트 패널 닫기(노트 입력 중에도 동작)
   // e.code 를 쓰는 이유: 한글 입력 상태에서는 e.key 가 "ㅗ" 가 된다.
   // 보드(Excalidraw) 안의 키 입력은 Excalidraw 단축키(H=손 도구, Esc=선택 해제 등)라 건드리지 않는다.
@@ -206,11 +270,15 @@ export default function App() {
       if (e.code === "KeyH") {
         e.preventDefault();
         void createHighlight();
+      } else if ((e.key === "Backspace" || e.key === "Delete") && selectedHighlight) {
+        // 하이라이트가 선택된 상태에서 Delete/Backspace → 삭제 확인
+        e.preventDefault();
+        void requestDelete(selectedHighlight);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [createHighlight]);
+  }, [createHighlight, requestDelete, selectedHighlight]);
 
   const goToPage = useCallback((index: number) => viewerRef.current?.scrollToPage(index), []);
 
@@ -260,8 +328,18 @@ export default function App() {
         onZoomOut={() => setScale(zoomOut)}
         onFitWidth={() => doc && fitWidth(doc.firstPageWidth)}
         onHighlight={() => void createHighlight()}
+        listOpen={listOpen}
+        onToggleList={() => setListOpen((v) => !v)}
       />
       <div className="workspace">
+      {doc && listOpen && (
+        <HighlightList
+          highlights={orderedHighlights}
+          selectedId={selectedHighlightId}
+          onSelect={openHighlight}
+          onDelete={(h) => void requestDelete(h)}
+        />
+      )}
       <main className="main" ref={mainRef}>
         {doc ? (
           <PdfViewer
@@ -300,6 +378,8 @@ export default function App() {
           onTabChange={setNoteTab}
           onClose={() => setSelectedHighlightId(null)}
           onJump={() => viewerRef.current?.scrollToHighlight(selectedHighlight)}
+          onColorChange={(color) => void changeColor(selectedHighlight.id, color)}
+          onDelete={() => void requestDelete(selectedHighlight)}
         />
       )}
       </div>

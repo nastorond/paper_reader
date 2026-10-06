@@ -81,6 +81,15 @@ export async function listHighlights(db: SqlDb, documentId: string): Promise<Hig
   return rows.map(toHighlight);
 }
 
+export async function updateHighlightColor(db: SqlDb, id: string, color: string): Promise<void> {
+  await db.execute("UPDATE highlights SET color = ? WHERE id = ?", [color, id]);
+}
+
+// 하이라이트 삭제. 노트는 외래 키(ON DELETE CASCADE)로 함께 지워진다(연결에 PRAGMA foreign_keys = ON 필요).
+export async function deleteHighlight(db: SqlDb, id: string): Promise<void> {
+  await db.execute("DELETE FROM highlights WHERE id = ?", [id]);
+}
+
 export async function getNote(db: SqlDb, highlightId: string): Promise<Note | null> {
   const rows = await db.select<NoteRow[]>("SELECT * FROM notes WHERE highlight_id = ?", [highlightId]);
   return rows[0] ? toNote(rows[0]) : null;

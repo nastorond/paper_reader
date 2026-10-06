@@ -11,6 +11,8 @@ interface Props {
   onZoomOut(): void;
   onFitWidth(): void;
   onHighlight(): void;
+  listOpen: boolean;
+  onToggleList(): void;
 }
 
 export function Toolbar(props: Props) {
@@ -30,6 +32,14 @@ export function Toolbar(props: Props) {
     <header className="toolbar">
       <button onClick={props.onOpen} title="PDF 열기 (⌘O)">
         열기
+      </button>
+      <button
+        className={props.listOpen ? "active" : ""}
+        disabled={!hasDoc}
+        onClick={props.onToggleList}
+        title="하이라이트 목록 보이기/숨기기"
+      >
+        목록
       </button>
       <div className="toolbar-group">
         <button disabled={!hasDoc || pageIndex <= 0} onClick={() => props.onGoToPage(pageIndex - 1)} title="이전 페이지">
