@@ -23,15 +23,60 @@ fn db_path(app: tauri::AppHandle) -> Result<String, String> {
     Ok(dir.join("paperboard.db").to_string_lossy().into_owned())
 }
 
+// Android 뷰어: 번들 파일 고르기(영구 읽기 권한 포함).
+// 실제 동작은 Kotlin 클래스(gen/android/.../BundlePickerPlugin.kt)에 있고, 여기서는 그 클래스를
+// 플러그인으로 등록한 뒤 앱 명령 pick_bundle 로 감싼다. 데스크톱에서는 쓰지 않는다.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct PickedBundle {
+    uri: Option<String>,
+    persisted: bool,
+}
+
+#[cfg(target_os = "android")]
+struct BundlePicker(tauri::plugin::PluginHandle<tauri::Wry>);
+
+#[cfg(target_os = "android")]
+fn bundle_picker_plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {
+    tauri::plugin::Builder::new("bundle-picker")
+        .setup(|app, api| {
+            let handle = api.register_android_plugin("com.paperboard.app", "BundlePickerPlugin")?;
+            app.manage(BundlePicker(handle));
+            Ok(())
+        })
+        .build()
+}
+
+#[tauri::command]
+async fn pick_bundle(app: tauri::AppHandle) -> Result<PickedBundle, String> {
+    #[cfg(target_os = "android")]
+    {
+        let picker = app.state::<BundlePicker>();
+        picker
+            .0
+            .run_mobile_plugin_async::<PickedBundle>("pick", ())
+            .await
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = app;
+        Err("pick_bundle 은 Android 전용입니다".into())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 플러그인 등록 + DB 경로 명령. 파일 열기·읽기·SQL 실행은 프론트엔드(TS)에서
     // @tauri-apps/plugin-dialog, plugin-fs, plugin-sql 로 호출한다.
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_sql::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![db_path])
+        .plugin(tauri_plugin_sql::Builder::default().build());
+    // `#[cfg(...)]` 는 C++ 의 #ifdef 처럼 컴파일 대상(여기선 Android)일 때만 이 줄을 넣는다.
+    #[cfg(target_os = "android")]
+    let builder = builder.plugin(bundle_picker_plugin());
+    builder
+        .invoke_handler(tauri::generate_handler![db_path, pick_bundle])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
