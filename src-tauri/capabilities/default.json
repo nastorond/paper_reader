@@ -9,6 +9,7 @@
     "core:default",
     "dialog:allow-open",
     "dialog:allow-confirm",
+    "dialog:allow-save",
     "sql:default",
     "sql:allow-execute",
     {
@@ -97,6 +98,34 @@
         },
         {
           "path": "/Volumes/**/*.svg"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$HOME/**/*.PDF"
+        },
+        {
+          "path": "$HOME/**/*.pdf"
+        },
+        {
+          "path": "/Volumes/**/*.PDF"
+        },
+        {
+          "path": "/Volumes/**/*.pdf"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        {
+          "path": "$HOME/**/*.md"
+        },
+        {
+          "path": "/Volumes/**/*.md"
         }
       ]
     }

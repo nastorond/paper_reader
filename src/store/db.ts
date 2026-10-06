@@ -65,6 +65,20 @@ export async function upsertDocument(
   return toDocument(rows[0]);
 }
 
+export interface RecentDocument extends DocumentRecord {
+  highlightCount: number;
+}
+
+// 최근에 연 문서(최근 순). 하이라이트 개수를 함께 준다.
+export async function listRecentDocuments(db: SqlDb, limit = 20): Promise<RecentDocument[]> {
+  const rows = await db.select<(DocumentRow & { highlight_count: number })[]>(
+    `SELECT d.*, (SELECT COUNT(*) FROM highlights h WHERE h.document_id = d.id) AS highlight_count
+     FROM documents d ORDER BY d.last_opened_at DESC LIMIT ?`,
+    [limit],
+  );
+  return rows.map((r) => ({ ...toDocument(r), highlightCount: Number(r.highlight_count) }));
+}
+
 export async function insertHighlight(db: SqlDb, h: Highlight): Promise<void> {
   await db.execute(
     `INSERT INTO highlights (id, document_id, page_index, rects, text, prefix, suffix, color, created_at)

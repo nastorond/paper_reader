@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
+import { exists } from "@tauri-apps/plugin-fs";
 import { Toolbar } from "./Toolbar";
 import { PdfViewer, type PdfViewerHandle } from "./pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "./pdf/pdfjs";
@@ -9,12 +10,23 @@ import { useFileDrop } from "./file/useFileDrop";
 import { dropFilesOnBoard } from "./note/boardDrop";
 import { sha256Hex } from "./file/hash";
 import { getDb } from "./store/tauriDb";
-import { deleteHighlight, insertHighlight, listHighlights, updateHighlightColor, upsertDocument } from "./store/db";
+import {
+  deleteHighlight,
+  insertHighlight,
+  listHighlights,
+  listRecentDocuments,
+  updateHighlightColor,
+  upsertDocument,
+  type RecentDocument,
+} from "./store/db";
 import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
 import { NotePanel, type NoteTab } from "./note/NotePanel";
 import { HighlightList } from "./sidebar/HighlightList";
 import { readingOrder } from "./sidebar/order";
+import { RecentList } from "./recent/RecentList";
+import { buildNotesMarkdown, exportNotesToFile } from "./export/exportNotes";
+import { safeFileName } from "./export/notesMarkdown";
 import "./App.css";
 
 interface OpenDoc {
@@ -41,6 +53,19 @@ export default function App() {
     import.meta.env.DEV && import.meta.env.VITE_DEV_OPEN_BOARD ? "board" : "note",
   );
   const [listOpen, setListOpen] = useState(true);
+  const [recentDocs, setRecentDocs] = useState<RecentDocument[]>([]);
+  const [recentOpen, setRecentOpen] = useState(false);
+
+  const refreshRecent = useCallback(async () => {
+    try {
+      const docs = await listRecentDocuments(await getDb());
+      setRecentDocs(docs);
+      devLog(`recent: ${docs.map((d) => `${d.title}(${d.highlightCount})`).join(", ")}`);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+  useEffect(() => void refreshRecent(), [refreshRecent]);
   const orderedHighlights = useMemo(() => readingOrder(highlights), [highlights]);
   const selectedHighlight = highlights.find((h) => h.id === selectedHighlightId) ?? null;
   const mainRef = useRef<HTMLElement>(null);
@@ -51,14 +76,18 @@ export default function App() {
     setScale(fitWidthScale(width, pageWidth));
   }, []);
 
+  // expectId: 최근 문서를 다른 위치에서 다시 고른 경우, 원래 문서와 같은 파일인지(내용 해시) 확인한다.
   const openPath = useCallback(
-    async (path: string) => {
+    async (path: string, expectId?: string) => {
       setLoading(true);
       setError(null);
       try {
         const file = await readPdfFile(path);
         // loadPdf 가 데이터를 워커로 넘기면(transfer) 원본 버퍼가 비므로 해시를 먼저 구한다.
         const id = await sha256Hex(file.data);
+        if (expectId && id !== expectId) {
+          setNotice("고른 파일이 원래 문서와 내용이 달라 새 문서로 열었습니다.");
+        }
         const pdf = await loadPdf(file.data);
         const first = await pdf.getPage(1);
         const firstPageWidth = first.getViewport({ scale: 1 }).width;
@@ -72,6 +101,8 @@ export default function App() {
         setHighlights(saved);
         setSelectedHighlightId(null);
         setPageIndex(0);
+        setRecentOpen(false);
+        void refreshRecent();
         fitWidth(firstPageWidth);
       } catch (e) {
         console.error(e);
@@ -80,7 +111,26 @@ export default function App() {
         setLoading(false);
       }
     },
-    [fitWidth],
+    [fitWidth, refreshRecent],
+  );
+
+  // 최근 문서 열기. 파일이 옮겨졌거나 지워졌으면 다시 고르게 하고, 내용 해시로 같은 문서인지 확인한다.
+  const openRecent = useCallback(
+    async (d: RecentDocument) => {
+      setRecentOpen(false);
+      const found = await exists(d.path).catch(() => false);
+      if (found) return openPath(d.path);
+      const again = await confirm(`파일을 찾을 수 없습니다.\n${d.path}\n\n옮긴 위치에서 다시 고를까요?`, {
+        title: d.title,
+        kind: "warning",
+        okLabel: "다시 고르기",
+        cancelLabel: "취소",
+      });
+      if (!again) return;
+      const path = await pickPdfPath();
+      if (path) await openPath(path, d.id);
+    },
+    [openPath],
   );
 
   const openDialog = useCallback(async () => {
@@ -155,6 +205,28 @@ export default function App() {
         });
     },
   });
+
+  const exportMarkdown = useCallback(async () => {
+    if (!doc) return;
+    try {
+      const saved = await exportNotesToFile(doc, readingOrder(highlights));
+      if (saved) setNotice(`내보냈습니다: ${saved}`);
+    } catch (e) {
+      console.error(e);
+      setError(`내보내지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }, [doc, highlights]);
+
+  // 개발 자가 테스트: 저장 창 없이 마크다운을 만들어 개발 서버가 .dev-data/export/ 에 쓰게 한다.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !import.meta.env.VITE_DEV_EXPORT_MD || !doc || highlights.length === 0) return;
+    const t = setTimeout(async () => {
+      const md = await buildNotesMarkdown(doc, readingOrder(highlights));
+      await fetch(`/__devexport?name=${encodeURIComponent(safeFileName(doc.title))}.md`, { method: "POST", body: md });
+      devLog(`dev export: ${md.length} chars`);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [doc, highlights]);
 
   const showNotice = useCallback((msg: string) => setNotice(msg), []);
   useEffect(() => {
@@ -330,7 +402,18 @@ export default function App() {
         onHighlight={() => void createHighlight()}
         listOpen={listOpen}
         onToggleList={() => setListOpen((v) => !v)}
+        recentOpen={recentOpen}
+        onToggleRecent={() => {
+          if (!recentOpen) void refreshRecent();
+          setRecentOpen((v) => !v);
+        }}
+        onExport={() => void exportMarkdown()}
       />
+      {recentOpen && (
+        <div className="recent-popover" onMouseLeave={() => setRecentOpen(false)}>
+          <RecentList docs={recentDocs} onOpen={(d) => void openRecent(d)} />
+        </div>
+      )}
       <div className="workspace">
       {doc && listOpen && (
         <HighlightList
@@ -358,6 +441,12 @@ export default function App() {
           <div className="empty">
             <p>PDF 파일을 열거나 이 창에 끌어다 놓으세요.</p>
             <button onClick={() => void openDialog()}>PDF 열기</button>
+            {recentDocs.length > 0 && (
+              <section className="recent-home">
+                <h2>최근 문서</h2>
+                <RecentList docs={recentDocs} onOpen={(d) => void openRecent(d)} />
+              </section>
+            )}
           </div>
         )}
         {loading && <div className="status">불러오는 중…</div>}

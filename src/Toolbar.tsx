@@ -13,6 +13,9 @@ interface Props {
   onHighlight(): void;
   listOpen: boolean;
   onToggleList(): void;
+  recentOpen: boolean;
+  onToggleRecent(): void;
+  onExport(): void;
 }
 
 export function Toolbar(props: Props) {
@@ -32,6 +35,9 @@ export function Toolbar(props: Props) {
     <header className="toolbar">
       <button onClick={props.onOpen} title="PDF 열기 (⌘O)">
         열기
+      </button>
+      <button className={props.recentOpen ? "active" : ""} onClick={props.onToggleRecent} title="최근 문서">
+        최근
       </button>
       <button
         className={props.listOpen ? "active" : ""}
@@ -84,6 +90,9 @@ export function Toolbar(props: Props) {
           title="선택한 문구 하이라이트 (H)"
         >
           하이라이트
+        </button>
+        <button disabled={!hasDoc} onClick={props.onExport} title="노트 전체를 마크다운 파일로 내보내기">
+          내보내기
         </button>
       </div>
       <div className="toolbar-title" title={title ?? undefined}>

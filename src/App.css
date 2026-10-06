@@ -563,3 +563,79 @@ button:disabled {
 .note-delete:hover {
   color: #dc2626;
 }
+
+/* ---- 최근 문서 ---- */
+
+.recent-home {
+  width: min(560px, 90%);
+  margin-top: 24px;
+}
+
+.recent-home h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.recent-popover {
+  position: absolute;
+  top: 44px;
+  left: 60px;
+  z-index: 20;
+  width: 460px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  padding: 4px;
+}
+
+.recent-empty {
+  padding: 8px 12px;
+  color: var(--muted);
+}
+
+.recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recent-list button {
+  display: grid;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  gap: 1px;
+}
+
+.recent-list button:hover {
+  background: var(--bg);
+}
+
+.recent-title {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-meta,
+.recent-path {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app {
+  position: relative;
+}

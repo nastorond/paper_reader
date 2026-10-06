@@ -1,5 +1,5 @@
-import { cpSync } from "node:fs";
-import { resolve } from "node:path";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
+import { basename, resolve } from "node:path";
 import process from "node:process";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
@@ -53,9 +53,33 @@ function devLogEndpoint(): Plugin {
   };
 }
 
+// 개발 전용: 노트 내보내기 자가 테스트. 저장 창 없이 .dev-data/export/ 에 쓴다(프로젝트 밖에는 쓰지 않음).
+function devExportEndpoint(): Plugin {
+  return {
+    name: "dev-export-endpoint",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/__devexport", (req, res) => {
+        const name = new URL(req.url ?? "", "http://x").searchParams.get("name") ?? "export.md";
+        const dir = resolve(server.config.root, ".dev-data/export");
+        const file = resolve(dir, basename(name));
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", () => {
+          mkdirSync(dir, { recursive: true });
+          writeFileSync(file, body);
+          console.log(`[webview] dev export written: ${file}`);
+          res.statusCode = 204;
+          res.end();
+        });
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(() => ({
-  plugins: [react(), copyLibraryAssets(), devLogEndpoint()],
+  plugins: [react(), copyLibraryAssets(), devLogEndpoint(), devExportEndpoint()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

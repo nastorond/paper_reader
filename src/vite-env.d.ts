@@ -25,4 +25,6 @@ interface ImportMetaEnv {
   // 개발 자가 테스트: 목록 첫 하이라이트의 색을 바꾸거나(값=색) 확인창 없이 삭제한다
   readonly VITE_DEV_COLOR_FIRST?: string;
   readonly VITE_DEV_DELETE_FIRST?: string;
+  // 개발 자가 테스트: 저장 창 없이 노트 마크다운을 .dev-data/export/ 에 쓴다(개발 서버 경유)
+  readonly VITE_DEV_EXPORT_MD?: string;
 }

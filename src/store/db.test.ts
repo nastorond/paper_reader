@@ -5,6 +5,7 @@ import {
   getNote,
   insertHighlight,
   listHighlights,
+  listRecentDocuments,
   migrate,
   saveNoteBoard,
   saveNoteBody,
@@ -133,5 +134,21 @@ describe("db", () => {
     expect((await listHighlights(db, "doc")).map((h) => h.id)).toEqual(["h2"]);
     expect(await getNote(db, "h1")).toBeNull();
     expect(db.raw.prepare("SELECT COUNT(*) AS n FROM notes").get()).toEqual({ n: 0 });
+  });
+
+  it("최근 문서: 최근 연 순서, 하이라이트 개수, 개수 제한", async () => {
+    const db = memoryDb();
+    await migrate(db);
+    await upsertDocument(db, { id: "a", path: "/a.pdf", title: "A" }, "2026-10-01T00:00:00Z");
+    await upsertDocument(db, { id: "b", path: "/b.pdf", title: "B" }, "2026-10-02T00:00:00Z");
+    await upsertDocument(db, { id: "a", path: "/a.pdf", title: "A" }, "2026-10-03T00:00:00Z"); // 다시 열기
+    await insertHighlight(db, highlight({ id: "h1", documentId: "a" }));
+    await insertHighlight(db, highlight({ id: "h2", documentId: "a" }));
+    const recent = await listRecentDocuments(db);
+    expect(recent.map((d) => [d.id, d.highlightCount])).toEqual([
+      ["a", 2],
+      ["b", 0],
+    ]);
+    expect(await listRecentDocuments(db, 1)).toHaveLength(1);
   });
 });
