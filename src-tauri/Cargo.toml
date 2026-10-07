@@ -1,6 +1,6 @@
 [package]
 name = "paperboard"
-version = "0.2.0"
+version = "0.3.0"
 description = "논문 문구별 노트 앱"
 authors = ["박수형"]
 edition = "2021"
