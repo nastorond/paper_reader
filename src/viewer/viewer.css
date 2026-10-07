@@ -183,6 +183,17 @@ button.link {
   overflow-x: auto;
 }
 
+/* 목록 들여쓰기: 맥 노트 편집기(App.css .note-content)와 같게 */
+.vocab-note-html ul,
+.vocab-note-html ol {
+  padding-left: 1.2em;
+}
+
+.vocab-note-html li ul,
+.vocab-note-html li ol {
+  padding-left: 1.3em;
+}
+
 .vocab-note-html table {
   border-collapse: collapse;
 }
