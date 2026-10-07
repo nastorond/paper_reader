@@ -10,14 +10,17 @@
     "test": "vitest run",
     "tauri": "tauri",
     "android": ". ./scripts/android-env.sh && tauri android",
-    "adb": ". ./scripts/android-env.sh && adb"
+    "adb": ". ./scripts/android-env.sh && adb",
+    "build:app": "sh scripts/build-app.sh"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
     "@tauri-apps/api": "^2.12.1",
     "@tauri-apps/plugin-dialog": "^2.8.1",
     "@tauri-apps/plugin-fs": "^2.6.0",
+    "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-sql": "^2.5.0",
+    "@tauri-apps/plugin-updater": "^2.13.1",
     "@tiptap/extension-mathematics": "^3.31.4",
     "@tiptap/extension-table": "^3.31.4",
     "@tiptap/extensions": "^3.31.4",

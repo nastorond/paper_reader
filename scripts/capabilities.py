@@ -52,6 +52,17 @@ capability = {
     ],
 }
 
-out = Path(__file__).resolve().parent.parent / "src-tauri/capabilities/default.json"
-out.write_text(json.dumps(capability, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-print(f"wrote {out} ({sum(len(p['allow']) for p in capability['permissions'] if isinstance(p, dict))} path patterns)")
+# 데스크톱 전용(자동 업데이트·재시작). 이 플러그인들은 Android 빌드에 없어서 따로 둔다.
+desktop = {
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "desktop",
+    "description": "데스크톱 전용 권한 (scripts/capabilities.py 가 생성 — 직접 고치지 말 것)",
+    "windows": ["main"],
+    "platforms": ["macOS", "windows", "linux"],
+    "permissions": ["updater:default", "process:allow-restart"],
+}
+
+caps = Path(__file__).resolve().parent.parent / "src-tauri/capabilities"
+for name, cap in [("default.json", capability), ("desktop.json", desktop)]:
+    (caps / name).write_text(json.dumps(cap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+print(f"wrote {caps} ({sum(len(p['allow']) for p in capability['permissions'] if isinstance(p, dict))} path patterns)")

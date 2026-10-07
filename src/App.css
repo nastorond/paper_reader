@@ -646,3 +646,28 @@ button:disabled {
   color: var(--muted);
   font-size: 12px;
 }
+
+/* ---- 자동 업데이트 안내 ---- */
+
+.update-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+}
+
+.update-banner button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}

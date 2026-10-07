@@ -23,6 +23,7 @@ import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
 import { NotePanel, type NoteTab } from "./note/NotePanel";
 import { isModKey } from "./platform";
+import { UpdateBanner } from "./update/UpdateBanner";
 import { HighlightList } from "./sidebar/HighlightList";
 import { readingOrder } from "./sidebar/order";
 import { RecentList } from "./recent/RecentList";
@@ -486,6 +487,7 @@ export default function App() {
           </div>
         )}
         {dragTarget === "pdf" && <div className="drop-overlay">여기에 놓아서 열기</div>}
+        <UpdateBanner />
       </main>
       {selectedHighlight && (
         <NotePanel

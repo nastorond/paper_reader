@@ -30,3 +30,6 @@ Thumbs.db
 
 # 개인 논문 PDF (테스트용으로 fixtures/에 두지만 저장소에는 올리지 않음)
 fixtures/KCI_FI003273433.pdf
+
+# 업데이트 서명 키 등 비밀 키(저장소에 올리지 않는다)
+.keys/

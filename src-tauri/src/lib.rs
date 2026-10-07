@@ -141,6 +141,11 @@ pub fn run() {
     // `#[cfg(...)]` 는 C++ 의 #ifdef 처럼 컴파일 대상(여기선 Android)일 때만 이 줄을 넣는다.
     #[cfg(target_os = "android")]
     let builder = builder.plugin(bundle_picker_plugin());
+    // 데스크톱(맥·Windows): 자동 업데이트(GitHub Releases 의 latest.json 확인)와 업데이트 후 재시작
+    #[cfg(desktop)]
+    let builder = builder
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init());
     builder
         .invoke_handler(tauri::generate_handler![db_path, pick_bundle, pick_folder, list_folder])
         .run(tauri::generate_context!())

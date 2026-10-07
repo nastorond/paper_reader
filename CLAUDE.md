@@ -120,8 +120,11 @@ Note {
 - 빌드: `pnpm tauri build`
 - 타입체크: `pnpm tsc --noEmit`
 - 테스트: `pnpm vitest run`
-- Windows 크로스 빌드(맥에서): `PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc` → `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe`
+- Windows 크로스 빌드(맥에서): `PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm build:app --runner cargo-xwin --target x86_64-pc-windows-msvc` → `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe`
 - 권한(capabilities) 수정: `scripts/capabilities.py`를 고치고 실행(생성된 JSON 직접 수정 금지)
+- 데스크톱 앱 빌드(로컬): `pnpm build:app` (업데이트 서명 키 `.keys/updater.key`를 넣어 `tauri build`. 그냥 `pnpm tauri build`는 서명 키가 없어 실패)
+- 릴리스: `sh scripts/release.sh X.Y.Z` → `git push origin master && git push origin vX.Y.Z` (태그 푸시로 GitHub Actions가 macOS·Windows 빌드 + Release + latest.json 업로드, 설치된 앱이 자동 업데이트)
+- 비밀 키 위치: 업데이트 서명 `.keys/`(git 제외), Android 서명 `src-tauri/gen/android/*.jks`·`keystore.properties`(git 제외). 둘 다 따로 백업
 - Android: `pnpm android init|dev|build`, `pnpm adb devices` (환경변수는 `scripts/android-env.sh`가 설정. `~/.zshrc`는 건드리지 않는다)
 
 사전 준비(없으면 설치하고 보고): Xcode Command Line Tools, Rust(rustup), Node, pnpm. Android 빌드 도구는 `android-viewer` 스킬 참고.
@@ -150,6 +153,7 @@ Note {
 - 마일스톤 하나씩 진행한다. 끝나면 타입체크·테스트·`pnpm tauri dev` 실행까지 확인하고, 내가 직접 해볼 수동 테스트 체크리스트를 짧게 남긴다.
 - 무거운 의존성을 새로 추가할 때는 먼저 물어본다. 위 스택에 있는 건 바로 써도 된다.
 - 네트워크 호출 없음. 텔레메트리·외부 API 금지. 모든 데이터는 로컬.
+  - 예외(2026-10): 데스크톱 앱의 **자동 업데이트 확인·다운로드**(GitHub Releases 의 `latest.json`, tauri-plugin-updater)만 허용. 내 데이터는 보내지 않는다.
 - 요청과 상관없는 코드는 리팩터링하지 않는다.
 - 좌표 변환, DB 저장/로드 같은 순수 로직은 vitest로 테스트를 붙인다.
 - 컴포넌트는 작게 나누고, PDF 렌더링 / 하이라이트 레이어 / 노트 패널 / 저장소를 분리한다.

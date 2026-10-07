@@ -87,7 +87,7 @@
 ```sh
 pnpm install
 pnpm tauri dev          # 맥 앱 개발 실행
-pnpm tauri build        # 맥 앱(.app) 빌드
+pnpm build:app          # 맥 앱(.app) 빌드 (업데이트 서명 포함)
 pnpm tsc --noEmit       # 타입체크
 pnpm vitest run         # 테스트
 ```
@@ -101,7 +101,7 @@ pnpm tauri build        # → src-tauri/target/release/bundle/ 의 .msi / .exe
 
 # 또는 맥에서 크로스 빌드 (실험적, 필요: brew install nsis llvm, cargo install cargo-xwin,
 #   rustup target add x86_64-pc-windows-msvc) → .exe 설치 파일만 만들어진다
-PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
+PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm build:app --runner cargo-xwin --target x86_64-pc-windows-msvc
 ```
 
 Android(필요: Android Studio, SDK·NDK, rustup Android 타깃. 환경변수는 `scripts/android-env.sh`가 설정):
@@ -121,11 +121,28 @@ pnpm adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/releas
     - `ANDROID_KEYSTORE_BASE64`: `base64 -i src-tauri/gen/android/paperboard-release.jks`의 출력
     - `ANDROID_KEYSTORE_PASSWORD`: `src-tauri/gen/android/keystore.properties`의 `password` 값
 
+### 자동 업데이트 (macOS·Windows)
+
+설치된 앱은 켜질 때 GitHub Releases의 최신 버전을 확인합니다. 새 버전이 있으면 화면 아래에 "업데이트하고 다시 시작"이 뜹니다. 받은 파일은 앱에 넣어 둔 공개 키로 서명을 확인한 뒤에만 설치합니다.
+
+새 버전 내기:
+
+```sh
+sh scripts/release.sh 0.3.0                             # 버전 올리기 + 커밋 + 태그
+git push origin master && git push origin v0.3.0         # 태그 푸시 → Actions가 빌드해 Release에 올림
+```
+
+처음 한 번 해 둘 것: 저장소 Settings → Secrets and variables → Actions에 업데이트 서명 키를 넣습니다.
+- `TAURI_SIGNING_PRIVATE_KEY`: `.keys/updater.key` 파일 내용
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: `.keys/updater.key.password` 파일 내용
+
+`.keys/`는 저장소에 올리지 않습니다. 잃어버리면 이미 설치된 앱이 새 업데이트를 받지 못하니 따로 백업하세요. 로컬에서 맥 앱을 빌드할 때는 `pnpm build:app`을 씁니다. 그냥 `pnpm tauri build`는 이 서명 키가 없어 실패합니다.
+
 ## 데이터 위치
 
 - 맥 앱 DB: `~/Library/Application Support/PaperBoard/paperboard.db`. 개발 실행 중에는 프로젝트 안 `.dev-data/`를 씁니다.
 - PDF 원본은 복사하지 않고 경로만 기억합니다. 하이라이트를 PDF 파일에 써 넣지 않습니다.
-- 앱은 외부 서버와 통신하지 않습니다. 폰으로 전달하는 일은 Google Drive 데스크톱 앱이 맡습니다.
+- 앱은 업데이트 확인(GitHub Releases) 말고는 외부와 통신하지 않습니다. 폰으로 전달하는 일은 Google Drive 데스크톱 앱이 맡습니다.
 
 ## 기술 스택
 
