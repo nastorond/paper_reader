@@ -1,0 +1,112 @@
+# 앱 빌드: Actions 탭에서 "Run workflow" 를 누르거나, v 로 시작하는 태그(예: v0.2.0)를 올리면 실행된다.
+# 결과 파일은 실행 화면 아래 Artifacts 에서 받는다.
+#   - macOS(Apple Silicon) .dmg, Windows .exe/.msi: 서명 없음(처음 열 때 경고가 뜰 수 있음)
+#   - Android .apk: 저장소 Secrets 에 서명 키가 있을 때만(아래 android 작업 참고)
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: PaperBoard-macos
+            files: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: PaperBoard-windows
+            files: |
+              src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+              src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tauri build --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  # Android 릴리스 APK. 서명 키를 저장소 Secrets 에 넣어야 만든다(없으면 건너뜀):
+  #   ANDROID_KEYSTORE_BASE64   = base64 로 바꾼 src-tauri/gen/android/paperboard-release.jks
+  #   ANDROID_KEYSTORE_PASSWORD = src-tauri/gen/android/keystore.properties 의 password 값
+  android:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - name: 서명 키가 없으면 건너뜀
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::ANDROID_KEYSTORE_BASE64 Secret 이 없어 Android 빌드를 건너뜁니다."
+      - uses: actions/checkout@v7
+        if: env.HAS_KEY == 'true'
+      - uses: pnpm/action-setup@v6
+        if: env.HAS_KEY == 'true'
+        with:
+          version: 12
+      - uses: actions/setup-node@v7
+        if: env.HAS_KEY == 'true'
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v6
+        if: env.HAS_KEY == 'true'
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v4
+        if: env.HAS_KEY == 'true'
+      - name: NDK 설치
+        if: env.HAS_KEY == 'true'
+        run: |
+          sdkmanager "ndk;30.0.16248370"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        if: env.HAS_KEY == 'true'
+        with:
+          targets: aarch64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        if: env.HAS_KEY == 'true'
+        with:
+          workspaces: src-tauri
+      - name: 서명 키 준비
+        if: env.HAS_KEY == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          dir="$GITHUB_WORKSPACE/src-tauri/gen/android"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$dir/paperboard-release.jks"
+          printf 'password=%s\nkeyAlias=paperboard\nstoreFile=%s\n' "$KEYSTORE_PASSWORD" "$dir/paperboard-release.jks" > "$dir/keystore.properties"
+      - if: env.HAS_KEY == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: env.HAS_KEY == 'true'
+        run: pnpm tauri android build --apk --target aarch64
+      - uses: actions/upload-artifact@v7
+        if: env.HAS_KEY == 'true'
+        with:
+          name: PaperBoard-android
+          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+          if-no-files-found: error

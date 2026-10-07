@@ -113,6 +113,14 @@ pnpm adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/releas
 
 릴리스 서명 키(`src-tauri/gen/android/paperboard-release.jks`, `keystore.properties`)는 저장소에 넣지 않습니다. 잃어버리면 폰 앱을 업데이트할 수 없으니 따로 백업하세요.
 
+### GitHub Actions
+
+- **CI**(`.github/workflows/ci.yml`): `master` 푸시와 PR마다 타입체크와 테스트를 돌립니다.
+- **Build**(`.github/workflows/build.yml`): Actions 탭에서 "Run workflow"를 누르거나 `v0.2.0` 같은 태그를 올리면, macOS `.dmg`·Windows `.exe`/`.msi`·Android `.apk`를 빌드해 실행 결과의 Artifacts에 올립니다.
+  - Android는 저장소 Settings → Secrets and variables → Actions에 서명 키를 넣었을 때만 빌드합니다:
+    - `ANDROID_KEYSTORE_BASE64`: `base64 -i src-tauri/gen/android/paperboard-release.jks`의 출력
+    - `ANDROID_KEYSTORE_PASSWORD`: `src-tauri/gen/android/keystore.properties`의 `password` 값
+
 ## 데이터 위치
 
 - 맥 앱 DB: `~/Library/Application Support/PaperBoard/paperboard.db`. 개발 실행 중에는 프로젝트 안 `.dev-data/`를 씁니다.
