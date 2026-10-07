@@ -12,15 +12,25 @@ fn db_path(app: tauri::AppHandle) -> Result<String, String> {
         // env!("CARGO_MANIFEST_DIR") = 컴파일 시점의 src-tauri 폴더 절대 경로
         match std::env::var("PAPERBOARD_DEV_DB_DIR") {
             Ok(custom) if !custom.is_empty() => PathBuf::from(custom),
-            _ => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join(".dev-data"),
+            // src-tauri 의 부모 = 프로젝트 폴더 (".." 를 쓰지 않아 경로 정리가 필요 없다)
+            _ => PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .ok_or("프로젝트 폴더를 찾을 수 없습니다")?
+                .join(".dev-data"),
         }
     } else {
         app.path().data_dir().map_err(|e| e.to_string())?.join("PaperBoard")
     };
-    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     // `?` 는 Err 면 즉시 그 에러를 반환하는 연산자(예외 대신 Result 를 쓰는 Rust 방식).
-    let dir = dir.canonicalize().map_err(|e| e.to_string())?;
-    Ok(dir.join("paperboard.db").to_string_lossy().into_owned())
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    // 주의: canonicalize() 를 쓰면 Windows 에서 `\\?\C:\...` 형태가 되는데, SQL 플러그인은 경로를
+    // "sqlite:<경로>" URL 로 해석해 `?` 뒤를 접속 옵션으로 읽고 실패한다("unknown query parameter").
+    let path = dir.join("paperboard.db");
+    let s = path.to_string_lossy().into_owned();
+    if s.contains('?') || s.contains('#') {
+        return Err(format!("DB 경로에 ? 나 # 가 있어 열 수 없습니다: {s}"));
+    }
+    Ok(s)
 }
 
 // Android 뷰어: 번들 파일 고르기(영구 읽기 권한 포함).
