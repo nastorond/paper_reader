@@ -51,7 +51,7 @@ describe("db", () => {
     const db = memoryDb();
     await migrate(db);
     await migrate(db);
-    expect(db.raw.prepare("PRAGMA user_version").get()).toEqual({ user_version: 2 });
+    expect(db.raw.prepare("PRAGMA user_version").get()).toEqual({ user_version: 3 });
   });
 
   it("문서 upsert: 다시 열면 경로·열람 시각만 갱신", async () => {
@@ -100,7 +100,7 @@ describe("db", () => {
     await saveNoteBody(db, "h1", body2, "2026-10-01T00:00:02Z");
     expect(await getNote(db, "h1")).toEqual({ highlightId: "h1", body: body2, board: null, updatedAt: "2026-10-01T00:00:02Z" });
 
-    db.raw.exec("DELETE FROM highlights WHERE id = 'h1'");
+    await deleteHighlight(db, "h1", "2026-10-01T00:00:03Z");
     expect(await getNote(db, "h1")).toBeNull();
   });
 
@@ -130,13 +130,18 @@ describe("db", () => {
     await saveNoteBody(db, "h1", { type: "doc" }, "2026-10-01T00:00:01Z");
     await saveNoteBoard(db, "h1", { elements: [] }, "2026-10-01T00:00:02Z");
 
-    await updateHighlightColor(db, "h1", "#86efac");
+    await updateHighlightColor(db, "h1", "#86efac", "2026-10-01T00:00:03Z");
     expect((await listHighlights(db, "doc")).find((h) => h.id === "h1")?.color).toBe("#86efac");
 
-    await deleteHighlight(db, "h1");
+    await deleteHighlight(db, "h1", "2026-10-01T00:00:04Z");
     expect((await listHighlights(db, "doc")).map((h) => h.id)).toEqual(["h2"]);
     expect(await getNote(db, "h1")).toBeNull();
     expect(db.raw.prepare("SELECT COUNT(*) AS n FROM notes").get()).toEqual({ n: 0 });
+    // 동기화용 지운 표시는 남는다
+    expect(db.raw.prepare("SELECT deleted_at, updated_at FROM highlights WHERE id = 'h1'").get()).toEqual({
+      deleted_at: "2026-10-01T00:00:04Z",
+      updated_at: "2026-10-01T00:00:04Z",
+    });
   });
 
   it("최근 문서: 최근 연 순서, 하이라이트 개수, 개수 제한", async () => {

@@ -31,6 +31,8 @@ interface ImportMetaEnv {
   readonly VITE_DEV_BUNDLE_DIR?: string;
   // 개발 자가 테스트: 번들 내보내기에 PDF 원문 포함
   readonly VITE_DEV_BUNDLE_PDFS?: string;
+  // 개발 자가 테스트: PC 간 동기화 켜기(번들 폴더 = VITE_DEV_BUNDLE_DIR)
+  readonly VITE_DEV_SYNC?: string;
   // 개발 자가 테스트: 첫 하이라이트 위에서 ctrl+휠 핀치(확대)를 보내고 위치 변화를 로그로 남긴다
   readonly VITE_DEV_PINCH?: string;
 }

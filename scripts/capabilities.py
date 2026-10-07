@@ -5,7 +5,7 @@
 
 경로 범위 원칙(최소 권한):
   - 읽기: PDF·이미지(보드에 넣기)만
-  - 쓰기: 마크다운 내보내기(.md), 번들 zip 과 그 임시 파일, 번들 폴더의 pdfs/*.pdf 만
+  - 쓰기: 마크다운 내보내기(.md), 번들 zip 과 그 임시 파일, 번들 폴더의 pdfs/*.pdf, PC 간 동기화 파일(sync/*.json) 만
   - 위치: 홈 폴더 아래 + macOS 외장 볼륨(/Volumes) + Windows 드라이브(C:~Z:, Google Drive 의 G: 등)
 """
 import json
@@ -29,6 +29,7 @@ def under_roots(*suffixes):
 PDF = [f"*.{e}" for e in both_cases(["pdf"])]
 IMAGES = [f"*.{e}" for e in both_cases(["png", "jpg", "jpeg", "gif", "webp", "svg"])]
 BUNDLE = ["paperboard-library.zip", "paperboard-library.zip.tmp"]
+SYNC = ["sync/*.json", "sync/*.json.tmp"]  # PC 간 동기화(src/sync)
 
 capability = {
     "$schema": "../gen/schemas/desktop-schema.json",
@@ -45,10 +46,12 @@ capability = {
         {"identifier": "fs:allow-read-file", "allow": under_roots(*PDF, *IMAGES)},
         # 최근 문서 경로 확인(PDF), 번들 폴더의 PDF 원문이 이미 있는지 확인
         {"identifier": "fs:allow-exists", "allow": under_roots(*PDF)},
-        {"identifier": "fs:allow-write-text-file", "allow": under_roots("*.md")},
+        {"identifier": "fs:allow-write-text-file", "allow": under_roots("*.md", *SYNC)},
+        {"identifier": "fs:allow-read-text-file", "allow": under_roots("sync/*.json")},
+        {"identifier": "fs:allow-read-dir", "allow": [{"path": f"{root}/**/sync"} for root in ROOTS]},
         {"identifier": "fs:allow-write-file", "allow": under_roots(*BUNDLE, "pdfs/*.pdf")},
-        {"identifier": "fs:allow-rename", "allow": under_roots(*BUNDLE)},
-        {"identifier": "fs:allow-mkdir", "allow": [{"path": f"{root}/**/pdfs"} for root in ROOTS]},
+        {"identifier": "fs:allow-rename", "allow": under_roots(*BUNDLE, *SYNC)},
+        {"identifier": "fs:allow-mkdir", "allow": [{"path": f"{root}/**/{d}"} for root in ROOTS for d in ("pdfs", "sync")]},
     ],
 }
 
@@ -59,7 +62,8 @@ desktop = {
     "description": "데스크톱 전용 권한 (scripts/capabilities.py 가 생성 — 직접 고치지 말 것)",
     "windows": ["main"],
     "platforms": ["macOS", "windows", "linux"],
-    "permissions": ["updater:default", "process:allow-restart"],
+    # 창 닫기 전에 동기화 파일을 마저 쓰려고 닫기 요청을 받아 직접 닫는다(onCloseRequested → destroy)
+    "permissions": ["updater:default", "process:allow-restart", "core:window:allow-destroy"],
 }
 
 caps = Path(__file__).resolve().parent.parent / "src-tauri/capabilities"

@@ -2,6 +2,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { formatDate } from "../recent/RecentList";
 import type { BundleState } from "./useBundleExport";
 import { BUNDLE_FILE_NAME } from "./schema";
+import type { SyncState } from "../sync/useSync";
 
 interface Props {
   state: BundleState;
@@ -10,10 +11,23 @@ interface Props {
   onSetIncludePdfs(v: boolean): void;
   onExportNow(): void;
   onClose(): void;
+  sync: SyncState;
+  onSetSync(enabled: boolean): void;
+  onSyncNow(): void;
 }
 
 // 툴바 "번들" 메뉴: 폰(단어장)용 번들 내보내기 설정.
-export function BundlePanel({ state, onSetDir, onSetAuto, onSetIncludePdfs, onExportNow, onClose }: Props) {
+export function BundlePanel({
+  state,
+  onSetDir,
+  onSetAuto,
+  onSetIncludePdfs,
+  onExportNow,
+  onClose,
+  sync,
+  onSetSync,
+  onSyncNow,
+}: Props) {
   const pickDir = async () => {
     const dir = await open({ directory: true, multiple: false, title: "번들을 저장할 폴더 (예: Google Drive 의 PaperBoard 폴더)" });
     if (typeof dir === "string") onSetDir(dir);
@@ -21,7 +35,7 @@ export function BundlePanel({ state, onSetDir, onSetAuto, onSetIncludePdfs, onEx
   return (
     <div className="bundle-popover" role="dialog">
       <div className="bundle-head">
-        <strong>폰용 번들 내보내기</strong>
+        <strong>Drive 폴더 — 폰 번들 · PC 동기화</strong>
         <button className="note-close" onClick={onClose} title="닫기">
           ×
         </button>
@@ -69,6 +83,31 @@ export function BundlePanel({ state, onSetDir, onSetAuto, onSetIncludePdfs, onEx
           원본 PDF 를 찾지 못해 올리지 못한 문서: {state.lastResult.pdfsMissing.join(", ")} — 해당 PDF 를 한 번 다시 열면
           경로가 갱신됩니다.
         </p>
+      )}
+      <hr className="bundle-sep" />
+      <label className="bundle-row">
+        <input type="checkbox" checked={sync.enabled} disabled={!state.dir} onChange={(e) => onSetSync(e.target.checked)} />
+        다른 PC(맥·Windows)와 동기화
+      </label>
+      <p className="bundle-desc">
+        같은 폴더의 <code>sync/</code> 에 이 PC 의 하이라이트·노트를 쓰고, 다른 PC 것을 읽어 합칩니다. 나중에 고친 쪽이
+        남습니다. PC 를 번갈아 쓸 때를 위한 기능이라, 두 PC 에서 같은 노트를 동시에 고치지 마세요. 폰 번들 자동
+        내보내기는 한 PC 에서만 켜 두세요.
+      </p>
+      {sync.enabled && (
+        <div className="bundle-row">
+          <button disabled={!state.dir || sync.status === "syncing"} onClick={onSyncNow}>
+            {sync.status === "syncing" ? "동기화 중…" : "지금 동기화"}
+          </button>
+          <span className="bundle-status">
+            {sync.status === "error"
+              ? `실패: ${sync.error}`
+              : sync.lastSyncAt
+                ? `마지막: ${formatDate(sync.lastSyncAt)}`
+                : ""}
+            {sync.device ? ` · 이 PC: ${sync.device.name}` : ""}
+          </span>
+        </div>
       )}
     </div>
   );

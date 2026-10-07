@@ -10,7 +10,7 @@ export interface SqlDb {
 
 // 스키마 버전별 마이그레이션. 순서대로 한 번씩만 실행되고 PRAGMA user_version 에 기록된다.
 // 이미 배포된 항목은 고치지 말고 새 항목을 뒤에 추가한다.
-const MIGRATIONS: string[] = [
+export const MIGRATIONS: string[] = [
   `CREATE TABLE documents (
      id TEXT PRIMARY KEY,
      path TEXT NOT NULL,
@@ -40,6 +40,24 @@ const MIGRATIONS: string[] = [
   `CREATE TABLE settings (
      key TEXT PRIMARY KEY,
      value TEXT NOT NULL
+   );`,
+  // v3: PC 간 동기화(src/sync/merge.ts). 항목별 수정 시각, 지운 표시(tombstone), 겹친 수정 백업.
+  // 하이라이트는 지워도 행을 남기고 deleted_at 을 기록한다(다른 PC 의 사본이 되살아나지 않게).
+  `ALTER TABLE highlights ADD COLUMN updated_at TEXT;
+   UPDATE highlights SET updated_at = created_at;
+   ALTER TABLE highlights ADD COLUMN deleted_at TEXT;
+   ALTER TABLE notes ADD COLUMN body_updated_at TEXT;
+   ALTER TABLE notes ADD COLUMN board_updated_at TEXT;
+   UPDATE notes SET body_updated_at = CASE WHEN body = 'null' THEN NULL ELSE updated_at END,
+                    board_updated_at = CASE WHEN board IS NULL THEN NULL ELSE updated_at END;
+   CREATE TABLE note_backups (
+     id TEXT PRIMARY KEY,
+     highlight_id TEXT NOT NULL,
+     field TEXT NOT NULL,
+     content TEXT,
+     content_updated_at TEXT,
+     replaced_at TEXT NOT NULL,
+     other_device TEXT NOT NULL
    );`,
 ];
 
@@ -77,7 +95,7 @@ export interface RecentDocument extends DocumentRecord {
 // 최근에 연 문서(최근 순). 하이라이트 개수를 함께 준다.
 export async function listRecentDocuments(db: SqlDb, limit = 20): Promise<RecentDocument[]> {
   const rows = await db.select<(DocumentRow & { highlight_count: number })[]>(
-    `SELECT d.*, (SELECT COUNT(*) FROM highlights h WHERE h.document_id = d.id) AS highlight_count
+    `SELECT d.*, (SELECT COUNT(*) FROM highlights h WHERE h.document_id = d.id AND h.deleted_at IS NULL) AS highlight_count
      FROM documents d ORDER BY d.last_opened_at DESC LIMIT ?`,
     [limit],
   );
@@ -87,8 +105,12 @@ export async function listRecentDocuments(db: SqlDb, limit = 20): Promise<Recent
 // 번들 내보내기용: 라이브러리 전체(모든 문서·하이라이트·노트).
 export async function listLibrary(db: SqlDb): Promise<{ documents: DocumentRecord[]; highlights: Highlight[]; notes: Note[] }> {
   const docs = await db.select<DocumentRow[]>("SELECT * FROM documents ORDER BY last_opened_at DESC");
-  const hls = await db.select<HighlightRow[]>("SELECT * FROM highlights ORDER BY document_id, page_index, created_at");
-  const notes = await db.select<NoteRow[]>("SELECT * FROM notes");
+  const hls = await db.select<HighlightRow[]>(
+    "SELECT * FROM highlights WHERE deleted_at IS NULL ORDER BY document_id, page_index, created_at",
+  );
+  const notes = await db.select<NoteRow[]>(
+    "SELECT n.* FROM notes n JOIN highlights h ON h.id = n.highlight_id WHERE h.deleted_at IS NULL",
+  );
   return { documents: docs.map(toDocument), highlights: hls.map(toHighlight), notes: notes.map(toNote) };
 }
 
@@ -106,27 +128,29 @@ export async function setSetting(db: SqlDb, key: string, value: string): Promise
 
 export async function insertHighlight(db: SqlDb, h: Highlight): Promise<void> {
   await db.execute(
-    `INSERT INTO highlights (id, document_id, page_index, rects, text, prefix, suffix, color, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [h.id, h.documentId, h.pageIndex, JSON.stringify(h.rects), h.text, h.prefix, h.suffix, h.color, h.createdAt],
+    `INSERT INTO highlights (id, document_id, page_index, rects, text, prefix, suffix, color, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [h.id, h.documentId, h.pageIndex, JSON.stringify(h.rects), h.text, h.prefix, h.suffix, h.color, h.createdAt, h.createdAt],
   );
 }
 
 export async function listHighlights(db: SqlDb, documentId: string): Promise<Highlight[]> {
   const rows = await db.select<HighlightRow[]>(
-    "SELECT * FROM highlights WHERE document_id = ? ORDER BY page_index, created_at",
+    "SELECT * FROM highlights WHERE document_id = ? AND deleted_at IS NULL ORDER BY page_index, created_at",
     [documentId],
   );
   return rows.map(toHighlight);
 }
 
-export async function updateHighlightColor(db: SqlDb, id: string, color: string): Promise<void> {
-  await db.execute("UPDATE highlights SET color = ? WHERE id = ?", [color, id]);
+export async function updateHighlightColor(db: SqlDb, id: string, color: string, now: string): Promise<void> {
+  await db.execute("UPDATE highlights SET color = ?, updated_at = ? WHERE id = ?", [color, now, id]);
 }
 
-// 하이라이트 삭제. 노트는 외래 키(ON DELETE CASCADE)로 함께 지워진다(연결에 PRAGMA foreign_keys = ON 필요).
-export async function deleteHighlight(db: SqlDb, id: string): Promise<void> {
-  await db.execute("DELETE FROM highlights WHERE id = ?", [id]);
+// 하이라이트 삭제. 행은 남기고 지운 표시(deleted_at)를 한다 — PC 간 동기화에서 삭제를 전파하기 위해.
+// 노트(본문·보드)는 바로 지운다.
+export async function deleteHighlight(db: SqlDb, id: string, now: string): Promise<void> {
+  await db.execute("UPDATE highlights SET deleted_at = ?, updated_at = ? WHERE id = ?", [now, now, id]);
+  await db.execute("DELETE FROM notes WHERE highlight_id = ?", [id]);
 }
 
 export async function getNote(db: SqlDb, highlightId: string): Promise<Note | null> {
@@ -137,18 +161,20 @@ export async function getNote(db: SqlDb, highlightId: string): Promise<Note | nu
 // 노트 본문(TipTap JSON) 저장. 보드는 건드리지 않는다.
 export async function saveNoteBody(db: SqlDb, highlightId: string, body: unknown, now: string): Promise<void> {
   await db.execute(
-    `INSERT INTO notes (highlight_id, body, board, updated_at) VALUES (?, ?, NULL, ?)
-     ON CONFLICT(highlight_id) DO UPDATE SET body = excluded.body, updated_at = excluded.updated_at`,
-    [highlightId, JSON.stringify(body), now],
+    `INSERT INTO notes (highlight_id, body, board, updated_at, body_updated_at) VALUES (?, ?, NULL, ?, ?)
+     ON CONFLICT(highlight_id) DO UPDATE SET body = excluded.body, updated_at = excluded.updated_at,
+       body_updated_at = excluded.body_updated_at`,
+    [highlightId, JSON.stringify(body), now, now],
   );
 }
 
 // 보드(Excalidraw 장면 JSON) 저장. 노트 본문이 아직 없으면 null 로 둔다.
 export async function saveNoteBoard(db: SqlDb, highlightId: string, board: unknown, now: string): Promise<void> {
   await db.execute(
-    `INSERT INTO notes (highlight_id, body, board, updated_at) VALUES (?, 'null', ?, ?)
-     ON CONFLICT(highlight_id) DO UPDATE SET board = excluded.board, updated_at = excluded.updated_at`,
-    [highlightId, JSON.stringify(board), now],
+    `INSERT INTO notes (highlight_id, body, board, updated_at, board_updated_at) VALUES (?, 'null', ?, ?, ?)
+     ON CONFLICT(highlight_id) DO UPDATE SET board = excluded.board, updated_at = excluded.updated_at,
+       board_updated_at = excluded.board_updated_at`,
+    [highlightId, JSON.stringify(board), now, now],
   );
 }
 

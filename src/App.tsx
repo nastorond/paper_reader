@@ -32,6 +32,9 @@ import { safeFileName } from "./export/notesMarkdown";
 import { useBundleExport } from "./bundle/useBundleExport";
 import { BundlePanel } from "./bundle/BundlePanel";
 import { notifyLibraryChanged } from "./bundle/libraryEvents";
+import { useSync } from "./sync/useSync";
+import type { MergeResult } from "./sync/syncFiles";
+import { join } from "@tauri-apps/api/path";
 import "./App.css";
 
 interface OpenDoc {
@@ -62,6 +65,8 @@ export default function App() {
   const [recentOpen, setRecentOpen] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
   const bundle = useBundleExport();
+  // 다른 PC 에서 바뀐 노트를 열고 있으면 패널을 다시 만들어 새 내용을 읽게 한다
+  const [panelVersion, setPanelVersion] = useState(0);
   // 개발 자가 테스트: 번들 폴더가 정해지면 한 번 바로 내보낸다
   const devBundleDone = useRef(false);
   useEffect(() => {
@@ -129,11 +134,40 @@ export default function App() {
   );
 
   // 최근 문서 열기. 파일이 옮겨졌거나 지워졌으면 다시 고르게 하고, 내용 해시로 같은 문서인지 확인한다.
+  // PC 간 동기화: 다른 PC 내용을 합쳐 DB 가 바뀌면 화면을 다시 읽는다.
+  const docRef = useRef<OpenDoc | null>(null);
+  docRef.current = doc;
+  const selectedRef = useRef<string | null>(null);
+  selectedRef.current = selectedHighlightId;
+  const onRemoteApplied = useCallback(
+    async (results: MergeResult[]) => {
+      const cur = docRef.current;
+      if (cur) setHighlights(await listHighlights(await getDb(), cur.id));
+      void refreshRecent();
+      const sel = selectedRef.current;
+      if (sel) {
+        const touched = results.some(
+          (r) => r.plan.highlights.some((h) => h.id === sel) || r.plan.notes.some((n) => n.highlightId === sel),
+        );
+        if (touched) setPanelVersion((v) => v + 1);
+      }
+      setNotice(results.map((r) => r.message).join(" / "));
+    },
+    [refreshRecent],
+  );
+  const sync = useSync(bundle.state.dir, (r) => void onRemoteApplied(r));
+
   const openRecent = useCallback(
     async (d: RecentDocument) => {
       setRecentOpen(false);
-      const found = await exists(d.path).catch(() => false);
+      const found = d.path ? await exists(d.path).catch(() => false) : false;
       if (found) return openPath(d.path);
+      // 이 PC 에 PDF 가 없으면(다른 PC 에서 동기화된 문서 등) Drive 폴더의 PDF 원문 사본으로 연다
+      const dir = bundle.state.dir;
+      if (dir) {
+        const copy = await join(dir, "pdfs", `${d.id}.pdf`);
+        if (await exists(copy).catch(() => false)) return openPath(copy, d.id);
+      }
       const again = await confirm(`파일을 찾을 수 없습니다.\n${d.path}\n\n옮긴 위치에서 다시 고를까요?`, {
         title: d.title,
         kind: "warning",
@@ -293,7 +327,7 @@ export default function App() {
   const changeColor = useCallback(async (id: string, color: string) => {
     setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, color } : h)));
     try {
-      await updateHighlightColor(await getDb(), id, color);
+      await updateHighlightColor(await getDb(), id, color, new Date().toISOString());
       notifyLibraryChanged();
     } catch (e) {
       console.error(e);
@@ -307,7 +341,7 @@ export default function App() {
     setSelectedHighlightId((cur) => (cur === h.id ? null : cur));
     await new Promise((r) => setTimeout(r, 0));
     try {
-      await deleteHighlight(await getDb(), h.id);
+      await deleteHighlight(await getDb(), h.id, new Date().toISOString());
       setHighlights((prev) => prev.filter((x) => x.id !== h.id));
       notifyLibraryChanged();
       devLog(`highlight deleted ${h.id} "${h.text}"`);
@@ -435,6 +469,9 @@ export default function App() {
           onSetAuto={(a) => void bundle.setAuto(a)}
           onSetIncludePdfs={(v) => void bundle.setIncludePdfs(v)}
           onExportNow={() => void bundle.exportNow()}
+          sync={sync.state}
+          onSetSync={(v) => void sync.setEnabled(v)}
+          onSyncNow={() => void sync.syncNow()}
           onClose={() => setBundleOpen(false)}
         />
       )}
@@ -491,7 +528,7 @@ export default function App() {
       </main>
       {selectedHighlight && (
         <NotePanel
-          key={selectedHighlight.id}
+          key={`${selectedHighlight.id}:${panelVersion}`}
           highlight={selectedHighlight}
           autoFocus={focusNoteId === selectedHighlight.id}
           tab={noteTab}

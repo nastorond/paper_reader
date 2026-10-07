@@ -1277,79 +1277,401 @@
           "path": "$HOME/**/*.md"
         },
         {
+          "path": "$HOME/**/sync/*.json"
+        },
+        {
+          "path": "$HOME/**/sync/*.json.tmp"
+        },
+        {
           "path": "/Volumes/**/*.md"
+        },
+        {
+          "path": "/Volumes/**/sync/*.json"
+        },
+        {
+          "path": "/Volumes/**/sync/*.json.tmp"
         },
         {
           "path": "C:/**/*.md"
         },
         {
+          "path": "C:/**/sync/*.json"
+        },
+        {
+          "path": "C:/**/sync/*.json.tmp"
+        },
+        {
           "path": "D:/**/*.md"
+        },
+        {
+          "path": "D:/**/sync/*.json"
+        },
+        {
+          "path": "D:/**/sync/*.json.tmp"
         },
         {
           "path": "E:/**/*.md"
         },
         {
+          "path": "E:/**/sync/*.json"
+        },
+        {
+          "path": "E:/**/sync/*.json.tmp"
+        },
+        {
           "path": "F:/**/*.md"
+        },
+        {
+          "path": "F:/**/sync/*.json"
+        },
+        {
+          "path": "F:/**/sync/*.json.tmp"
         },
         {
           "path": "G:/**/*.md"
         },
         {
+          "path": "G:/**/sync/*.json"
+        },
+        {
+          "path": "G:/**/sync/*.json.tmp"
+        },
+        {
           "path": "H:/**/*.md"
+        },
+        {
+          "path": "H:/**/sync/*.json"
+        },
+        {
+          "path": "H:/**/sync/*.json.tmp"
         },
         {
           "path": "I:/**/*.md"
         },
         {
+          "path": "I:/**/sync/*.json"
+        },
+        {
+          "path": "I:/**/sync/*.json.tmp"
+        },
+        {
           "path": "J:/**/*.md"
+        },
+        {
+          "path": "J:/**/sync/*.json"
+        },
+        {
+          "path": "J:/**/sync/*.json.tmp"
         },
         {
           "path": "K:/**/*.md"
         },
         {
+          "path": "K:/**/sync/*.json"
+        },
+        {
+          "path": "K:/**/sync/*.json.tmp"
+        },
+        {
           "path": "L:/**/*.md"
+        },
+        {
+          "path": "L:/**/sync/*.json"
+        },
+        {
+          "path": "L:/**/sync/*.json.tmp"
         },
         {
           "path": "M:/**/*.md"
         },
         {
+          "path": "M:/**/sync/*.json"
+        },
+        {
+          "path": "M:/**/sync/*.json.tmp"
+        },
+        {
           "path": "N:/**/*.md"
+        },
+        {
+          "path": "N:/**/sync/*.json"
+        },
+        {
+          "path": "N:/**/sync/*.json.tmp"
         },
         {
           "path": "O:/**/*.md"
         },
         {
+          "path": "O:/**/sync/*.json"
+        },
+        {
+          "path": "O:/**/sync/*.json.tmp"
+        },
+        {
           "path": "P:/**/*.md"
+        },
+        {
+          "path": "P:/**/sync/*.json"
+        },
+        {
+          "path": "P:/**/sync/*.json.tmp"
         },
         {
           "path": "Q:/**/*.md"
         },
         {
+          "path": "Q:/**/sync/*.json"
+        },
+        {
+          "path": "Q:/**/sync/*.json.tmp"
+        },
+        {
           "path": "R:/**/*.md"
+        },
+        {
+          "path": "R:/**/sync/*.json"
+        },
+        {
+          "path": "R:/**/sync/*.json.tmp"
         },
         {
           "path": "S:/**/*.md"
         },
         {
+          "path": "S:/**/sync/*.json"
+        },
+        {
+          "path": "S:/**/sync/*.json.tmp"
+        },
+        {
           "path": "T:/**/*.md"
+        },
+        {
+          "path": "T:/**/sync/*.json"
+        },
+        {
+          "path": "T:/**/sync/*.json.tmp"
         },
         {
           "path": "U:/**/*.md"
         },
         {
+          "path": "U:/**/sync/*.json"
+        },
+        {
+          "path": "U:/**/sync/*.json.tmp"
+        },
+        {
           "path": "V:/**/*.md"
+        },
+        {
+          "path": "V:/**/sync/*.json"
+        },
+        {
+          "path": "V:/**/sync/*.json.tmp"
         },
         {
           "path": "W:/**/*.md"
         },
         {
+          "path": "W:/**/sync/*.json"
+        },
+        {
+          "path": "W:/**/sync/*.json.tmp"
+        },
+        {
           "path": "X:/**/*.md"
+        },
+        {
+          "path": "X:/**/sync/*.json"
+        },
+        {
+          "path": "X:/**/sync/*.json.tmp"
         },
         {
           "path": "Y:/**/*.md"
         },
         {
+          "path": "Y:/**/sync/*.json"
+        },
+        {
+          "path": "Y:/**/sync/*.json.tmp"
+        },
+        {
           "path": "Z:/**/*.md"
+        },
+        {
+          "path": "Z:/**/sync/*.json"
+        },
+        {
+          "path": "Z:/**/sync/*.json.tmp"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        {
+          "path": "$HOME/**/sync/*.json"
+        },
+        {
+          "path": "/Volumes/**/sync/*.json"
+        },
+        {
+          "path": "C:/**/sync/*.json"
+        },
+        {
+          "path": "D:/**/sync/*.json"
+        },
+        {
+          "path": "E:/**/sync/*.json"
+        },
+        {
+          "path": "F:/**/sync/*.json"
+        },
+        {
+          "path": "G:/**/sync/*.json"
+        },
+        {
+          "path": "H:/**/sync/*.json"
+        },
+        {
+          "path": "I:/**/sync/*.json"
+        },
+        {
+          "path": "J:/**/sync/*.json"
+        },
+        {
+          "path": "K:/**/sync/*.json"
+        },
+        {
+          "path": "L:/**/sync/*.json"
+        },
+        {
+          "path": "M:/**/sync/*.json"
+        },
+        {
+          "path": "N:/**/sync/*.json"
+        },
+        {
+          "path": "O:/**/sync/*.json"
+        },
+        {
+          "path": "P:/**/sync/*.json"
+        },
+        {
+          "path": "Q:/**/sync/*.json"
+        },
+        {
+          "path": "R:/**/sync/*.json"
+        },
+        {
+          "path": "S:/**/sync/*.json"
+        },
+        {
+          "path": "T:/**/sync/*.json"
+        },
+        {
+          "path": "U:/**/sync/*.json"
+        },
+        {
+          "path": "V:/**/sync/*.json"
+        },
+        {
+          "path": "W:/**/sync/*.json"
+        },
+        {
+          "path": "X:/**/sync/*.json"
+        },
+        {
+          "path": "Y:/**/sync/*.json"
+        },
+        {
+          "path": "Z:/**/sync/*.json"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        {
+          "path": "$HOME/**/sync"
+        },
+        {
+          "path": "/Volumes/**/sync"
+        },
+        {
+          "path": "C:/**/sync"
+        },
+        {
+          "path": "D:/**/sync"
+        },
+        {
+          "path": "E:/**/sync"
+        },
+        {
+          "path": "F:/**/sync"
+        },
+        {
+          "path": "G:/**/sync"
+        },
+        {
+          "path": "H:/**/sync"
+        },
+        {
+          "path": "I:/**/sync"
+        },
+        {
+          "path": "J:/**/sync"
+        },
+        {
+          "path": "K:/**/sync"
+        },
+        {
+          "path": "L:/**/sync"
+        },
+        {
+          "path": "M:/**/sync"
+        },
+        {
+          "path": "N:/**/sync"
+        },
+        {
+          "path": "O:/**/sync"
+        },
+        {
+          "path": "P:/**/sync"
+        },
+        {
+          "path": "Q:/**/sync"
+        },
+        {
+          "path": "R:/**/sync"
+        },
+        {
+          "path": "S:/**/sync"
+        },
+        {
+          "path": "T:/**/sync"
+        },
+        {
+          "path": "U:/**/sync"
+        },
+        {
+          "path": "V:/**/sync"
+        },
+        {
+          "path": "W:/**/sync"
+        },
+        {
+          "path": "X:/**/sync"
+        },
+        {
+          "path": "Y:/**/sync"
+        },
+        {
+          "path": "Z:/**/sync"
         }
       ]
     },
@@ -1602,10 +1924,22 @@
           "path": "$HOME/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "$HOME/**/sync/*.json"
+        },
+        {
+          "path": "$HOME/**/sync/*.json.tmp"
+        },
+        {
           "path": "/Volumes/**/paperboard-library.zip"
         },
         {
           "path": "/Volumes/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "/Volumes/**/sync/*.json"
+        },
+        {
+          "path": "/Volumes/**/sync/*.json.tmp"
         },
         {
           "path": "C:/**/paperboard-library.zip"
@@ -1614,10 +1948,22 @@
           "path": "C:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "C:/**/sync/*.json"
+        },
+        {
+          "path": "C:/**/sync/*.json.tmp"
+        },
+        {
           "path": "D:/**/paperboard-library.zip"
         },
         {
           "path": "D:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "D:/**/sync/*.json"
+        },
+        {
+          "path": "D:/**/sync/*.json.tmp"
         },
         {
           "path": "E:/**/paperboard-library.zip"
@@ -1626,10 +1972,22 @@
           "path": "E:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "E:/**/sync/*.json"
+        },
+        {
+          "path": "E:/**/sync/*.json.tmp"
+        },
+        {
           "path": "F:/**/paperboard-library.zip"
         },
         {
           "path": "F:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "F:/**/sync/*.json"
+        },
+        {
+          "path": "F:/**/sync/*.json.tmp"
         },
         {
           "path": "G:/**/paperboard-library.zip"
@@ -1638,10 +1996,22 @@
           "path": "G:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "G:/**/sync/*.json"
+        },
+        {
+          "path": "G:/**/sync/*.json.tmp"
+        },
+        {
           "path": "H:/**/paperboard-library.zip"
         },
         {
           "path": "H:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "H:/**/sync/*.json"
+        },
+        {
+          "path": "H:/**/sync/*.json.tmp"
         },
         {
           "path": "I:/**/paperboard-library.zip"
@@ -1650,10 +2020,22 @@
           "path": "I:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "I:/**/sync/*.json"
+        },
+        {
+          "path": "I:/**/sync/*.json.tmp"
+        },
+        {
           "path": "J:/**/paperboard-library.zip"
         },
         {
           "path": "J:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "J:/**/sync/*.json"
+        },
+        {
+          "path": "J:/**/sync/*.json.tmp"
         },
         {
           "path": "K:/**/paperboard-library.zip"
@@ -1662,10 +2044,22 @@
           "path": "K:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "K:/**/sync/*.json"
+        },
+        {
+          "path": "K:/**/sync/*.json.tmp"
+        },
+        {
           "path": "L:/**/paperboard-library.zip"
         },
         {
           "path": "L:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "L:/**/sync/*.json"
+        },
+        {
+          "path": "L:/**/sync/*.json.tmp"
         },
         {
           "path": "M:/**/paperboard-library.zip"
@@ -1674,10 +2068,22 @@
           "path": "M:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "M:/**/sync/*.json"
+        },
+        {
+          "path": "M:/**/sync/*.json.tmp"
+        },
+        {
           "path": "N:/**/paperboard-library.zip"
         },
         {
           "path": "N:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "N:/**/sync/*.json"
+        },
+        {
+          "path": "N:/**/sync/*.json.tmp"
         },
         {
           "path": "O:/**/paperboard-library.zip"
@@ -1686,10 +2092,22 @@
           "path": "O:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "O:/**/sync/*.json"
+        },
+        {
+          "path": "O:/**/sync/*.json.tmp"
+        },
+        {
           "path": "P:/**/paperboard-library.zip"
         },
         {
           "path": "P:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "P:/**/sync/*.json"
+        },
+        {
+          "path": "P:/**/sync/*.json.tmp"
         },
         {
           "path": "Q:/**/paperboard-library.zip"
@@ -1698,10 +2116,22 @@
           "path": "Q:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "Q:/**/sync/*.json"
+        },
+        {
+          "path": "Q:/**/sync/*.json.tmp"
+        },
+        {
           "path": "R:/**/paperboard-library.zip"
         },
         {
           "path": "R:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "R:/**/sync/*.json"
+        },
+        {
+          "path": "R:/**/sync/*.json.tmp"
         },
         {
           "path": "S:/**/paperboard-library.zip"
@@ -1710,10 +2140,22 @@
           "path": "S:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "S:/**/sync/*.json"
+        },
+        {
+          "path": "S:/**/sync/*.json.tmp"
+        },
+        {
           "path": "T:/**/paperboard-library.zip"
         },
         {
           "path": "T:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "T:/**/sync/*.json"
+        },
+        {
+          "path": "T:/**/sync/*.json.tmp"
         },
         {
           "path": "U:/**/paperboard-library.zip"
@@ -1722,10 +2164,22 @@
           "path": "U:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "U:/**/sync/*.json"
+        },
+        {
+          "path": "U:/**/sync/*.json.tmp"
+        },
+        {
           "path": "V:/**/paperboard-library.zip"
         },
         {
           "path": "V:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "V:/**/sync/*.json"
+        },
+        {
+          "path": "V:/**/sync/*.json.tmp"
         },
         {
           "path": "W:/**/paperboard-library.zip"
@@ -1734,10 +2188,22 @@
           "path": "W:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "W:/**/sync/*.json"
+        },
+        {
+          "path": "W:/**/sync/*.json.tmp"
+        },
+        {
           "path": "X:/**/paperboard-library.zip"
         },
         {
           "path": "X:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "X:/**/sync/*.json"
+        },
+        {
+          "path": "X:/**/sync/*.json.tmp"
         },
         {
           "path": "Y:/**/paperboard-library.zip"
@@ -1746,10 +2212,22 @@
           "path": "Y:/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "Y:/**/sync/*.json"
+        },
+        {
+          "path": "Y:/**/sync/*.json.tmp"
+        },
+        {
           "path": "Z:/**/paperboard-library.zip"
         },
         {
           "path": "Z:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Z:/**/sync/*.json"
+        },
+        {
+          "path": "Z:/**/sync/*.json.tmp"
         }
       ]
     },
@@ -1760,79 +2238,157 @@
           "path": "$HOME/**/pdfs"
         },
         {
+          "path": "$HOME/**/sync"
+        },
+        {
           "path": "/Volumes/**/pdfs"
+        },
+        {
+          "path": "/Volumes/**/sync"
         },
         {
           "path": "C:/**/pdfs"
         },
         {
+          "path": "C:/**/sync"
+        },
+        {
           "path": "D:/**/pdfs"
+        },
+        {
+          "path": "D:/**/sync"
         },
         {
           "path": "E:/**/pdfs"
         },
         {
+          "path": "E:/**/sync"
+        },
+        {
           "path": "F:/**/pdfs"
+        },
+        {
+          "path": "F:/**/sync"
         },
         {
           "path": "G:/**/pdfs"
         },
         {
+          "path": "G:/**/sync"
+        },
+        {
           "path": "H:/**/pdfs"
+        },
+        {
+          "path": "H:/**/sync"
         },
         {
           "path": "I:/**/pdfs"
         },
         {
+          "path": "I:/**/sync"
+        },
+        {
           "path": "J:/**/pdfs"
+        },
+        {
+          "path": "J:/**/sync"
         },
         {
           "path": "K:/**/pdfs"
         },
         {
+          "path": "K:/**/sync"
+        },
+        {
           "path": "L:/**/pdfs"
+        },
+        {
+          "path": "L:/**/sync"
         },
         {
           "path": "M:/**/pdfs"
         },
         {
+          "path": "M:/**/sync"
+        },
+        {
           "path": "N:/**/pdfs"
+        },
+        {
+          "path": "N:/**/sync"
         },
         {
           "path": "O:/**/pdfs"
         },
         {
+          "path": "O:/**/sync"
+        },
+        {
           "path": "P:/**/pdfs"
+        },
+        {
+          "path": "P:/**/sync"
         },
         {
           "path": "Q:/**/pdfs"
         },
         {
+          "path": "Q:/**/sync"
+        },
+        {
           "path": "R:/**/pdfs"
+        },
+        {
+          "path": "R:/**/sync"
         },
         {
           "path": "S:/**/pdfs"
         },
         {
+          "path": "S:/**/sync"
+        },
+        {
           "path": "T:/**/pdfs"
+        },
+        {
+          "path": "T:/**/sync"
         },
         {
           "path": "U:/**/pdfs"
         },
         {
+          "path": "U:/**/sync"
+        },
+        {
           "path": "V:/**/pdfs"
+        },
+        {
+          "path": "V:/**/sync"
         },
         {
           "path": "W:/**/pdfs"
         },
         {
+          "path": "W:/**/sync"
+        },
+        {
           "path": "X:/**/pdfs"
+        },
+        {
+          "path": "X:/**/sync"
         },
         {
           "path": "Y:/**/pdfs"
         },
         {
+          "path": "Y:/**/sync"
+        },
+        {
           "path": "Z:/**/pdfs"
+        },
+        {
+          "path": "Z:/**/sync"
         }
       ]
     }
