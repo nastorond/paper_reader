@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
+  <!-- Android 적응형 아이콘 앞면(배경 없음). 기기가 원·둥근 사각형 등으로 잘라도 보이도록
+       가운데 안전 영역(지름 66) 안에 종이·노트만 둔다. 뒷면 색은 values/ic_launcher_background.xml.
+       app-icon.svg 를 바꾸면 이것도 맞춰 고치고 scripts/android-icons.sh 로 다시 만든다. -->
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0b1a5c" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <g transform="translate(54 54) scale(0.098) translate(-525 -490)">
+    <g filter="url(#shadow)">
+      <rect x="250" y="200" width="430" height="580" rx="34" fill="#ffffff"/>
+    </g>
+    <g fill="#cfd6e4">
+      <rect x="305" y="280" width="320" height="22" rx="11"/>
+      <rect x="305" y="340" width="280" height="22" rx="11"/>
+      <rect x="305" y="520" width="300" height="22" rx="11"/>
+      <rect x="305" y="580" width="250" height="22" rx="11"/>
+      <rect x="305" y="640" width="180" height="22" rx="11"/>
+    </g>
+    <rect x="290" y="392" width="330" height="72" rx="14" fill="#fde047"/>
+    <rect x="305" y="417" width="280" height="22" rx="11" fill="#8a6d00" opacity="0.55"/>
+    <g filter="url(#shadow)" transform="rotate(-8 660 640)">
+      <rect x="530" y="520" width="270" height="250" rx="30" fill="#ffd34d"/>
+      <g fill="#8a5a00" opacity="0.7">
+        <rect x="572" y="578" width="186" height="20" rx="10"/>
+        <rect x="572" y="630" width="160" height="20" rx="10"/>
+        <rect x="572" y="682" width="110" height="20" rx="10"/>
+      </g>
+    </g>
+  </g>
+</svg>

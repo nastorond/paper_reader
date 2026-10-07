@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- PaperBoard 앱 아이콘 원본. 바꾼 뒤 `pnpm tauri icon src-tauri/icons/app-icon.svg` 로 모든 크기를 다시 만든다. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8cff"/>
+      <stop offset="1" stop-color="#2f43c4"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0b1a5c" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- 배경(macOS 아이콘 격자: 1024 캔버스 안 824 사각형) -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+
+  <!-- 논문 종이 -->
+  <g filter="url(#shadow)">
+    <rect x="250" y="200" width="430" height="580" rx="34" fill="#ffffff"/>
+  </g>
+  <g fill="#cfd6e4">
+    <rect x="305" y="280" width="320" height="22" rx="11"/>
+    <rect x="305" y="340" width="280" height="22" rx="11"/>
+    <rect x="305" y="520" width="300" height="22" rx="11"/>
+    <rect x="305" y="580" width="250" height="22" rx="11"/>
+    <rect x="305" y="640" width="180" height="22" rx="11"/>
+  </g>
+  <!-- 형광펜 하이라이트 줄 -->
+  <rect x="290" y="392" width="330" height="72" rx="14" fill="#fde047"/>
+  <rect x="305" y="417" width="280" height="22" rx="11" fill="#8a6d00" opacity="0.55"/>
+
+  <!-- 노트 카드 -->
+  <g filter="url(#shadow)" transform="rotate(-8 660 640)">
+    <rect x="530" y="520" width="270" height="250" rx="30" fill="#ffd34d"/>
+    <g fill="#8a5a00" opacity="0.7">
+      <rect x="572" y="578" width="186" height="20" rx="10"/>
+      <rect x="572" y="630" width="160" height="20" rx="10"/>
+      <rect x="572" y="682" width="110" height="20" rx="10"/>
+    </g>
+  </g>
+</svg>
