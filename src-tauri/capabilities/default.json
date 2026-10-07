@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for the main window (scripts/capabilities.py 가 생성 — 직접 고치지 말 것)",
   "windows": [
     "main"
   ],
@@ -16,88 +16,1096 @@
       "identifier": "fs:allow-read-file",
       "allow": [
         {
-          "path": "$HOME/**/*.PDF"
-        },
-        {
           "path": "$HOME/**/*.pdf"
         },
         {
-          "path": "$HOME/**/*.PNG"
+          "path": "$HOME/**/*.PDF"
         },
         {
           "path": "$HOME/**/*.png"
         },
         {
-          "path": "$HOME/**/*.JPG"
+          "path": "$HOME/**/*.PNG"
         },
         {
           "path": "$HOME/**/*.jpg"
         },
         {
-          "path": "$HOME/**/*.JPEG"
+          "path": "$HOME/**/*.JPG"
         },
         {
           "path": "$HOME/**/*.jpeg"
         },
         {
-          "path": "$HOME/**/*.GIF"
+          "path": "$HOME/**/*.JPEG"
         },
         {
           "path": "$HOME/**/*.gif"
         },
         {
-          "path": "$HOME/**/*.WEBP"
+          "path": "$HOME/**/*.GIF"
         },
         {
           "path": "$HOME/**/*.webp"
         },
         {
-          "path": "$HOME/**/*.SVG"
+          "path": "$HOME/**/*.WEBP"
         },
         {
           "path": "$HOME/**/*.svg"
         },
         {
-          "path": "/Volumes/**/*.PDF"
+          "path": "$HOME/**/*.SVG"
         },
         {
           "path": "/Volumes/**/*.pdf"
         },
         {
-          "path": "/Volumes/**/*.PNG"
+          "path": "/Volumes/**/*.PDF"
         },
         {
           "path": "/Volumes/**/*.png"
         },
         {
-          "path": "/Volumes/**/*.JPG"
+          "path": "/Volumes/**/*.PNG"
         },
         {
           "path": "/Volumes/**/*.jpg"
         },
         {
-          "path": "/Volumes/**/*.JPEG"
+          "path": "/Volumes/**/*.JPG"
         },
         {
           "path": "/Volumes/**/*.jpeg"
         },
         {
-          "path": "/Volumes/**/*.GIF"
+          "path": "/Volumes/**/*.JPEG"
         },
         {
           "path": "/Volumes/**/*.gif"
         },
         {
-          "path": "/Volumes/**/*.WEBP"
+          "path": "/Volumes/**/*.GIF"
         },
         {
           "path": "/Volumes/**/*.webp"
         },
         {
-          "path": "/Volumes/**/*.SVG"
+          "path": "/Volumes/**/*.WEBP"
         },
         {
           "path": "/Volumes/**/*.svg"
+        },
+        {
+          "path": "/Volumes/**/*.SVG"
+        },
+        {
+          "path": "C:/**/*.pdf"
+        },
+        {
+          "path": "C:/**/*.PDF"
+        },
+        {
+          "path": "C:/**/*.png"
+        },
+        {
+          "path": "C:/**/*.PNG"
+        },
+        {
+          "path": "C:/**/*.jpg"
+        },
+        {
+          "path": "C:/**/*.JPG"
+        },
+        {
+          "path": "C:/**/*.jpeg"
+        },
+        {
+          "path": "C:/**/*.JPEG"
+        },
+        {
+          "path": "C:/**/*.gif"
+        },
+        {
+          "path": "C:/**/*.GIF"
+        },
+        {
+          "path": "C:/**/*.webp"
+        },
+        {
+          "path": "C:/**/*.WEBP"
+        },
+        {
+          "path": "C:/**/*.svg"
+        },
+        {
+          "path": "C:/**/*.SVG"
+        },
+        {
+          "path": "D:/**/*.pdf"
+        },
+        {
+          "path": "D:/**/*.PDF"
+        },
+        {
+          "path": "D:/**/*.png"
+        },
+        {
+          "path": "D:/**/*.PNG"
+        },
+        {
+          "path": "D:/**/*.jpg"
+        },
+        {
+          "path": "D:/**/*.JPG"
+        },
+        {
+          "path": "D:/**/*.jpeg"
+        },
+        {
+          "path": "D:/**/*.JPEG"
+        },
+        {
+          "path": "D:/**/*.gif"
+        },
+        {
+          "path": "D:/**/*.GIF"
+        },
+        {
+          "path": "D:/**/*.webp"
+        },
+        {
+          "path": "D:/**/*.WEBP"
+        },
+        {
+          "path": "D:/**/*.svg"
+        },
+        {
+          "path": "D:/**/*.SVG"
+        },
+        {
+          "path": "E:/**/*.pdf"
+        },
+        {
+          "path": "E:/**/*.PDF"
+        },
+        {
+          "path": "E:/**/*.png"
+        },
+        {
+          "path": "E:/**/*.PNG"
+        },
+        {
+          "path": "E:/**/*.jpg"
+        },
+        {
+          "path": "E:/**/*.JPG"
+        },
+        {
+          "path": "E:/**/*.jpeg"
+        },
+        {
+          "path": "E:/**/*.JPEG"
+        },
+        {
+          "path": "E:/**/*.gif"
+        },
+        {
+          "path": "E:/**/*.GIF"
+        },
+        {
+          "path": "E:/**/*.webp"
+        },
+        {
+          "path": "E:/**/*.WEBP"
+        },
+        {
+          "path": "E:/**/*.svg"
+        },
+        {
+          "path": "E:/**/*.SVG"
+        },
+        {
+          "path": "F:/**/*.pdf"
+        },
+        {
+          "path": "F:/**/*.PDF"
+        },
+        {
+          "path": "F:/**/*.png"
+        },
+        {
+          "path": "F:/**/*.PNG"
+        },
+        {
+          "path": "F:/**/*.jpg"
+        },
+        {
+          "path": "F:/**/*.JPG"
+        },
+        {
+          "path": "F:/**/*.jpeg"
+        },
+        {
+          "path": "F:/**/*.JPEG"
+        },
+        {
+          "path": "F:/**/*.gif"
+        },
+        {
+          "path": "F:/**/*.GIF"
+        },
+        {
+          "path": "F:/**/*.webp"
+        },
+        {
+          "path": "F:/**/*.WEBP"
+        },
+        {
+          "path": "F:/**/*.svg"
+        },
+        {
+          "path": "F:/**/*.SVG"
+        },
+        {
+          "path": "G:/**/*.pdf"
+        },
+        {
+          "path": "G:/**/*.PDF"
+        },
+        {
+          "path": "G:/**/*.png"
+        },
+        {
+          "path": "G:/**/*.PNG"
+        },
+        {
+          "path": "G:/**/*.jpg"
+        },
+        {
+          "path": "G:/**/*.JPG"
+        },
+        {
+          "path": "G:/**/*.jpeg"
+        },
+        {
+          "path": "G:/**/*.JPEG"
+        },
+        {
+          "path": "G:/**/*.gif"
+        },
+        {
+          "path": "G:/**/*.GIF"
+        },
+        {
+          "path": "G:/**/*.webp"
+        },
+        {
+          "path": "G:/**/*.WEBP"
+        },
+        {
+          "path": "G:/**/*.svg"
+        },
+        {
+          "path": "G:/**/*.SVG"
+        },
+        {
+          "path": "H:/**/*.pdf"
+        },
+        {
+          "path": "H:/**/*.PDF"
+        },
+        {
+          "path": "H:/**/*.png"
+        },
+        {
+          "path": "H:/**/*.PNG"
+        },
+        {
+          "path": "H:/**/*.jpg"
+        },
+        {
+          "path": "H:/**/*.JPG"
+        },
+        {
+          "path": "H:/**/*.jpeg"
+        },
+        {
+          "path": "H:/**/*.JPEG"
+        },
+        {
+          "path": "H:/**/*.gif"
+        },
+        {
+          "path": "H:/**/*.GIF"
+        },
+        {
+          "path": "H:/**/*.webp"
+        },
+        {
+          "path": "H:/**/*.WEBP"
+        },
+        {
+          "path": "H:/**/*.svg"
+        },
+        {
+          "path": "H:/**/*.SVG"
+        },
+        {
+          "path": "I:/**/*.pdf"
+        },
+        {
+          "path": "I:/**/*.PDF"
+        },
+        {
+          "path": "I:/**/*.png"
+        },
+        {
+          "path": "I:/**/*.PNG"
+        },
+        {
+          "path": "I:/**/*.jpg"
+        },
+        {
+          "path": "I:/**/*.JPG"
+        },
+        {
+          "path": "I:/**/*.jpeg"
+        },
+        {
+          "path": "I:/**/*.JPEG"
+        },
+        {
+          "path": "I:/**/*.gif"
+        },
+        {
+          "path": "I:/**/*.GIF"
+        },
+        {
+          "path": "I:/**/*.webp"
+        },
+        {
+          "path": "I:/**/*.WEBP"
+        },
+        {
+          "path": "I:/**/*.svg"
+        },
+        {
+          "path": "I:/**/*.SVG"
+        },
+        {
+          "path": "J:/**/*.pdf"
+        },
+        {
+          "path": "J:/**/*.PDF"
+        },
+        {
+          "path": "J:/**/*.png"
+        },
+        {
+          "path": "J:/**/*.PNG"
+        },
+        {
+          "path": "J:/**/*.jpg"
+        },
+        {
+          "path": "J:/**/*.JPG"
+        },
+        {
+          "path": "J:/**/*.jpeg"
+        },
+        {
+          "path": "J:/**/*.JPEG"
+        },
+        {
+          "path": "J:/**/*.gif"
+        },
+        {
+          "path": "J:/**/*.GIF"
+        },
+        {
+          "path": "J:/**/*.webp"
+        },
+        {
+          "path": "J:/**/*.WEBP"
+        },
+        {
+          "path": "J:/**/*.svg"
+        },
+        {
+          "path": "J:/**/*.SVG"
+        },
+        {
+          "path": "K:/**/*.pdf"
+        },
+        {
+          "path": "K:/**/*.PDF"
+        },
+        {
+          "path": "K:/**/*.png"
+        },
+        {
+          "path": "K:/**/*.PNG"
+        },
+        {
+          "path": "K:/**/*.jpg"
+        },
+        {
+          "path": "K:/**/*.JPG"
+        },
+        {
+          "path": "K:/**/*.jpeg"
+        },
+        {
+          "path": "K:/**/*.JPEG"
+        },
+        {
+          "path": "K:/**/*.gif"
+        },
+        {
+          "path": "K:/**/*.GIF"
+        },
+        {
+          "path": "K:/**/*.webp"
+        },
+        {
+          "path": "K:/**/*.WEBP"
+        },
+        {
+          "path": "K:/**/*.svg"
+        },
+        {
+          "path": "K:/**/*.SVG"
+        },
+        {
+          "path": "L:/**/*.pdf"
+        },
+        {
+          "path": "L:/**/*.PDF"
+        },
+        {
+          "path": "L:/**/*.png"
+        },
+        {
+          "path": "L:/**/*.PNG"
+        },
+        {
+          "path": "L:/**/*.jpg"
+        },
+        {
+          "path": "L:/**/*.JPG"
+        },
+        {
+          "path": "L:/**/*.jpeg"
+        },
+        {
+          "path": "L:/**/*.JPEG"
+        },
+        {
+          "path": "L:/**/*.gif"
+        },
+        {
+          "path": "L:/**/*.GIF"
+        },
+        {
+          "path": "L:/**/*.webp"
+        },
+        {
+          "path": "L:/**/*.WEBP"
+        },
+        {
+          "path": "L:/**/*.svg"
+        },
+        {
+          "path": "L:/**/*.SVG"
+        },
+        {
+          "path": "M:/**/*.pdf"
+        },
+        {
+          "path": "M:/**/*.PDF"
+        },
+        {
+          "path": "M:/**/*.png"
+        },
+        {
+          "path": "M:/**/*.PNG"
+        },
+        {
+          "path": "M:/**/*.jpg"
+        },
+        {
+          "path": "M:/**/*.JPG"
+        },
+        {
+          "path": "M:/**/*.jpeg"
+        },
+        {
+          "path": "M:/**/*.JPEG"
+        },
+        {
+          "path": "M:/**/*.gif"
+        },
+        {
+          "path": "M:/**/*.GIF"
+        },
+        {
+          "path": "M:/**/*.webp"
+        },
+        {
+          "path": "M:/**/*.WEBP"
+        },
+        {
+          "path": "M:/**/*.svg"
+        },
+        {
+          "path": "M:/**/*.SVG"
+        },
+        {
+          "path": "N:/**/*.pdf"
+        },
+        {
+          "path": "N:/**/*.PDF"
+        },
+        {
+          "path": "N:/**/*.png"
+        },
+        {
+          "path": "N:/**/*.PNG"
+        },
+        {
+          "path": "N:/**/*.jpg"
+        },
+        {
+          "path": "N:/**/*.JPG"
+        },
+        {
+          "path": "N:/**/*.jpeg"
+        },
+        {
+          "path": "N:/**/*.JPEG"
+        },
+        {
+          "path": "N:/**/*.gif"
+        },
+        {
+          "path": "N:/**/*.GIF"
+        },
+        {
+          "path": "N:/**/*.webp"
+        },
+        {
+          "path": "N:/**/*.WEBP"
+        },
+        {
+          "path": "N:/**/*.svg"
+        },
+        {
+          "path": "N:/**/*.SVG"
+        },
+        {
+          "path": "O:/**/*.pdf"
+        },
+        {
+          "path": "O:/**/*.PDF"
+        },
+        {
+          "path": "O:/**/*.png"
+        },
+        {
+          "path": "O:/**/*.PNG"
+        },
+        {
+          "path": "O:/**/*.jpg"
+        },
+        {
+          "path": "O:/**/*.JPG"
+        },
+        {
+          "path": "O:/**/*.jpeg"
+        },
+        {
+          "path": "O:/**/*.JPEG"
+        },
+        {
+          "path": "O:/**/*.gif"
+        },
+        {
+          "path": "O:/**/*.GIF"
+        },
+        {
+          "path": "O:/**/*.webp"
+        },
+        {
+          "path": "O:/**/*.WEBP"
+        },
+        {
+          "path": "O:/**/*.svg"
+        },
+        {
+          "path": "O:/**/*.SVG"
+        },
+        {
+          "path": "P:/**/*.pdf"
+        },
+        {
+          "path": "P:/**/*.PDF"
+        },
+        {
+          "path": "P:/**/*.png"
+        },
+        {
+          "path": "P:/**/*.PNG"
+        },
+        {
+          "path": "P:/**/*.jpg"
+        },
+        {
+          "path": "P:/**/*.JPG"
+        },
+        {
+          "path": "P:/**/*.jpeg"
+        },
+        {
+          "path": "P:/**/*.JPEG"
+        },
+        {
+          "path": "P:/**/*.gif"
+        },
+        {
+          "path": "P:/**/*.GIF"
+        },
+        {
+          "path": "P:/**/*.webp"
+        },
+        {
+          "path": "P:/**/*.WEBP"
+        },
+        {
+          "path": "P:/**/*.svg"
+        },
+        {
+          "path": "P:/**/*.SVG"
+        },
+        {
+          "path": "Q:/**/*.pdf"
+        },
+        {
+          "path": "Q:/**/*.PDF"
+        },
+        {
+          "path": "Q:/**/*.png"
+        },
+        {
+          "path": "Q:/**/*.PNG"
+        },
+        {
+          "path": "Q:/**/*.jpg"
+        },
+        {
+          "path": "Q:/**/*.JPG"
+        },
+        {
+          "path": "Q:/**/*.jpeg"
+        },
+        {
+          "path": "Q:/**/*.JPEG"
+        },
+        {
+          "path": "Q:/**/*.gif"
+        },
+        {
+          "path": "Q:/**/*.GIF"
+        },
+        {
+          "path": "Q:/**/*.webp"
+        },
+        {
+          "path": "Q:/**/*.WEBP"
+        },
+        {
+          "path": "Q:/**/*.svg"
+        },
+        {
+          "path": "Q:/**/*.SVG"
+        },
+        {
+          "path": "R:/**/*.pdf"
+        },
+        {
+          "path": "R:/**/*.PDF"
+        },
+        {
+          "path": "R:/**/*.png"
+        },
+        {
+          "path": "R:/**/*.PNG"
+        },
+        {
+          "path": "R:/**/*.jpg"
+        },
+        {
+          "path": "R:/**/*.JPG"
+        },
+        {
+          "path": "R:/**/*.jpeg"
+        },
+        {
+          "path": "R:/**/*.JPEG"
+        },
+        {
+          "path": "R:/**/*.gif"
+        },
+        {
+          "path": "R:/**/*.GIF"
+        },
+        {
+          "path": "R:/**/*.webp"
+        },
+        {
+          "path": "R:/**/*.WEBP"
+        },
+        {
+          "path": "R:/**/*.svg"
+        },
+        {
+          "path": "R:/**/*.SVG"
+        },
+        {
+          "path": "S:/**/*.pdf"
+        },
+        {
+          "path": "S:/**/*.PDF"
+        },
+        {
+          "path": "S:/**/*.png"
+        },
+        {
+          "path": "S:/**/*.PNG"
+        },
+        {
+          "path": "S:/**/*.jpg"
+        },
+        {
+          "path": "S:/**/*.JPG"
+        },
+        {
+          "path": "S:/**/*.jpeg"
+        },
+        {
+          "path": "S:/**/*.JPEG"
+        },
+        {
+          "path": "S:/**/*.gif"
+        },
+        {
+          "path": "S:/**/*.GIF"
+        },
+        {
+          "path": "S:/**/*.webp"
+        },
+        {
+          "path": "S:/**/*.WEBP"
+        },
+        {
+          "path": "S:/**/*.svg"
+        },
+        {
+          "path": "S:/**/*.SVG"
+        },
+        {
+          "path": "T:/**/*.pdf"
+        },
+        {
+          "path": "T:/**/*.PDF"
+        },
+        {
+          "path": "T:/**/*.png"
+        },
+        {
+          "path": "T:/**/*.PNG"
+        },
+        {
+          "path": "T:/**/*.jpg"
+        },
+        {
+          "path": "T:/**/*.JPG"
+        },
+        {
+          "path": "T:/**/*.jpeg"
+        },
+        {
+          "path": "T:/**/*.JPEG"
+        },
+        {
+          "path": "T:/**/*.gif"
+        },
+        {
+          "path": "T:/**/*.GIF"
+        },
+        {
+          "path": "T:/**/*.webp"
+        },
+        {
+          "path": "T:/**/*.WEBP"
+        },
+        {
+          "path": "T:/**/*.svg"
+        },
+        {
+          "path": "T:/**/*.SVG"
+        },
+        {
+          "path": "U:/**/*.pdf"
+        },
+        {
+          "path": "U:/**/*.PDF"
+        },
+        {
+          "path": "U:/**/*.png"
+        },
+        {
+          "path": "U:/**/*.PNG"
+        },
+        {
+          "path": "U:/**/*.jpg"
+        },
+        {
+          "path": "U:/**/*.JPG"
+        },
+        {
+          "path": "U:/**/*.jpeg"
+        },
+        {
+          "path": "U:/**/*.JPEG"
+        },
+        {
+          "path": "U:/**/*.gif"
+        },
+        {
+          "path": "U:/**/*.GIF"
+        },
+        {
+          "path": "U:/**/*.webp"
+        },
+        {
+          "path": "U:/**/*.WEBP"
+        },
+        {
+          "path": "U:/**/*.svg"
+        },
+        {
+          "path": "U:/**/*.SVG"
+        },
+        {
+          "path": "V:/**/*.pdf"
+        },
+        {
+          "path": "V:/**/*.PDF"
+        },
+        {
+          "path": "V:/**/*.png"
+        },
+        {
+          "path": "V:/**/*.PNG"
+        },
+        {
+          "path": "V:/**/*.jpg"
+        },
+        {
+          "path": "V:/**/*.JPG"
+        },
+        {
+          "path": "V:/**/*.jpeg"
+        },
+        {
+          "path": "V:/**/*.JPEG"
+        },
+        {
+          "path": "V:/**/*.gif"
+        },
+        {
+          "path": "V:/**/*.GIF"
+        },
+        {
+          "path": "V:/**/*.webp"
+        },
+        {
+          "path": "V:/**/*.WEBP"
+        },
+        {
+          "path": "V:/**/*.svg"
+        },
+        {
+          "path": "V:/**/*.SVG"
+        },
+        {
+          "path": "W:/**/*.pdf"
+        },
+        {
+          "path": "W:/**/*.PDF"
+        },
+        {
+          "path": "W:/**/*.png"
+        },
+        {
+          "path": "W:/**/*.PNG"
+        },
+        {
+          "path": "W:/**/*.jpg"
+        },
+        {
+          "path": "W:/**/*.JPG"
+        },
+        {
+          "path": "W:/**/*.jpeg"
+        },
+        {
+          "path": "W:/**/*.JPEG"
+        },
+        {
+          "path": "W:/**/*.gif"
+        },
+        {
+          "path": "W:/**/*.GIF"
+        },
+        {
+          "path": "W:/**/*.webp"
+        },
+        {
+          "path": "W:/**/*.WEBP"
+        },
+        {
+          "path": "W:/**/*.svg"
+        },
+        {
+          "path": "W:/**/*.SVG"
+        },
+        {
+          "path": "X:/**/*.pdf"
+        },
+        {
+          "path": "X:/**/*.PDF"
+        },
+        {
+          "path": "X:/**/*.png"
+        },
+        {
+          "path": "X:/**/*.PNG"
+        },
+        {
+          "path": "X:/**/*.jpg"
+        },
+        {
+          "path": "X:/**/*.JPG"
+        },
+        {
+          "path": "X:/**/*.jpeg"
+        },
+        {
+          "path": "X:/**/*.JPEG"
+        },
+        {
+          "path": "X:/**/*.gif"
+        },
+        {
+          "path": "X:/**/*.GIF"
+        },
+        {
+          "path": "X:/**/*.webp"
+        },
+        {
+          "path": "X:/**/*.WEBP"
+        },
+        {
+          "path": "X:/**/*.svg"
+        },
+        {
+          "path": "X:/**/*.SVG"
+        },
+        {
+          "path": "Y:/**/*.pdf"
+        },
+        {
+          "path": "Y:/**/*.PDF"
+        },
+        {
+          "path": "Y:/**/*.png"
+        },
+        {
+          "path": "Y:/**/*.PNG"
+        },
+        {
+          "path": "Y:/**/*.jpg"
+        },
+        {
+          "path": "Y:/**/*.JPG"
+        },
+        {
+          "path": "Y:/**/*.jpeg"
+        },
+        {
+          "path": "Y:/**/*.JPEG"
+        },
+        {
+          "path": "Y:/**/*.gif"
+        },
+        {
+          "path": "Y:/**/*.GIF"
+        },
+        {
+          "path": "Y:/**/*.webp"
+        },
+        {
+          "path": "Y:/**/*.WEBP"
+        },
+        {
+          "path": "Y:/**/*.svg"
+        },
+        {
+          "path": "Y:/**/*.SVG"
+        },
+        {
+          "path": "Z:/**/*.pdf"
+        },
+        {
+          "path": "Z:/**/*.PDF"
+        },
+        {
+          "path": "Z:/**/*.png"
+        },
+        {
+          "path": "Z:/**/*.PNG"
+        },
+        {
+          "path": "Z:/**/*.jpg"
+        },
+        {
+          "path": "Z:/**/*.JPG"
+        },
+        {
+          "path": "Z:/**/*.jpeg"
+        },
+        {
+          "path": "Z:/**/*.JPEG"
+        },
+        {
+          "path": "Z:/**/*.gif"
+        },
+        {
+          "path": "Z:/**/*.GIF"
+        },
+        {
+          "path": "Z:/**/*.webp"
+        },
+        {
+          "path": "Z:/**/*.WEBP"
+        },
+        {
+          "path": "Z:/**/*.svg"
+        },
+        {
+          "path": "Z:/**/*.SVG"
         }
       ]
     },
@@ -105,16 +1113,160 @@
       "identifier": "fs:allow-exists",
       "allow": [
         {
+          "path": "$HOME/**/*.pdf"
+        },
+        {
           "path": "$HOME/**/*.PDF"
         },
         {
-          "path": "$HOME/**/*.pdf"
+          "path": "/Volumes/**/*.pdf"
         },
         {
           "path": "/Volumes/**/*.PDF"
         },
         {
-          "path": "/Volumes/**/*.pdf"
+          "path": "C:/**/*.pdf"
+        },
+        {
+          "path": "C:/**/*.PDF"
+        },
+        {
+          "path": "D:/**/*.pdf"
+        },
+        {
+          "path": "D:/**/*.PDF"
+        },
+        {
+          "path": "E:/**/*.pdf"
+        },
+        {
+          "path": "E:/**/*.PDF"
+        },
+        {
+          "path": "F:/**/*.pdf"
+        },
+        {
+          "path": "F:/**/*.PDF"
+        },
+        {
+          "path": "G:/**/*.pdf"
+        },
+        {
+          "path": "G:/**/*.PDF"
+        },
+        {
+          "path": "H:/**/*.pdf"
+        },
+        {
+          "path": "H:/**/*.PDF"
+        },
+        {
+          "path": "I:/**/*.pdf"
+        },
+        {
+          "path": "I:/**/*.PDF"
+        },
+        {
+          "path": "J:/**/*.pdf"
+        },
+        {
+          "path": "J:/**/*.PDF"
+        },
+        {
+          "path": "K:/**/*.pdf"
+        },
+        {
+          "path": "K:/**/*.PDF"
+        },
+        {
+          "path": "L:/**/*.pdf"
+        },
+        {
+          "path": "L:/**/*.PDF"
+        },
+        {
+          "path": "M:/**/*.pdf"
+        },
+        {
+          "path": "M:/**/*.PDF"
+        },
+        {
+          "path": "N:/**/*.pdf"
+        },
+        {
+          "path": "N:/**/*.PDF"
+        },
+        {
+          "path": "O:/**/*.pdf"
+        },
+        {
+          "path": "O:/**/*.PDF"
+        },
+        {
+          "path": "P:/**/*.pdf"
+        },
+        {
+          "path": "P:/**/*.PDF"
+        },
+        {
+          "path": "Q:/**/*.pdf"
+        },
+        {
+          "path": "Q:/**/*.PDF"
+        },
+        {
+          "path": "R:/**/*.pdf"
+        },
+        {
+          "path": "R:/**/*.PDF"
+        },
+        {
+          "path": "S:/**/*.pdf"
+        },
+        {
+          "path": "S:/**/*.PDF"
+        },
+        {
+          "path": "T:/**/*.pdf"
+        },
+        {
+          "path": "T:/**/*.PDF"
+        },
+        {
+          "path": "U:/**/*.pdf"
+        },
+        {
+          "path": "U:/**/*.PDF"
+        },
+        {
+          "path": "V:/**/*.pdf"
+        },
+        {
+          "path": "V:/**/*.PDF"
+        },
+        {
+          "path": "W:/**/*.pdf"
+        },
+        {
+          "path": "W:/**/*.PDF"
+        },
+        {
+          "path": "X:/**/*.pdf"
+        },
+        {
+          "path": "X:/**/*.PDF"
+        },
+        {
+          "path": "Y:/**/*.pdf"
+        },
+        {
+          "path": "Y:/**/*.PDF"
+        },
+        {
+          "path": "Z:/**/*.pdf"
+        },
+        {
+          "path": "Z:/**/*.PDF"
         }
       ]
     },
@@ -126,6 +1278,78 @@
         },
         {
           "path": "/Volumes/**/*.md"
+        },
+        {
+          "path": "C:/**/*.md"
+        },
+        {
+          "path": "D:/**/*.md"
+        },
+        {
+          "path": "E:/**/*.md"
+        },
+        {
+          "path": "F:/**/*.md"
+        },
+        {
+          "path": "G:/**/*.md"
+        },
+        {
+          "path": "H:/**/*.md"
+        },
+        {
+          "path": "I:/**/*.md"
+        },
+        {
+          "path": "J:/**/*.md"
+        },
+        {
+          "path": "K:/**/*.md"
+        },
+        {
+          "path": "L:/**/*.md"
+        },
+        {
+          "path": "M:/**/*.md"
+        },
+        {
+          "path": "N:/**/*.md"
+        },
+        {
+          "path": "O:/**/*.md"
+        },
+        {
+          "path": "P:/**/*.md"
+        },
+        {
+          "path": "Q:/**/*.md"
+        },
+        {
+          "path": "R:/**/*.md"
+        },
+        {
+          "path": "S:/**/*.md"
+        },
+        {
+          "path": "T:/**/*.md"
+        },
+        {
+          "path": "U:/**/*.md"
+        },
+        {
+          "path": "V:/**/*.md"
+        },
+        {
+          "path": "W:/**/*.md"
+        },
+        {
+          "path": "X:/**/*.md"
+        },
+        {
+          "path": "Y:/**/*.md"
+        },
+        {
+          "path": "Z:/**/*.md"
         }
       ]
     },
@@ -139,16 +1363,232 @@
           "path": "$HOME/**/paperboard-library.zip.tmp"
         },
         {
+          "path": "$HOME/**/pdfs/*.pdf"
+        },
+        {
           "path": "/Volumes/**/paperboard-library.zip"
         },
         {
           "path": "/Volumes/**/paperboard-library.zip.tmp"
         },
         {
-          "path": "$HOME/**/pdfs/*.pdf"
+          "path": "/Volumes/**/pdfs/*.pdf"
         },
         {
-          "path": "/Volumes/**/pdfs/*.pdf"
+          "path": "C:/**/paperboard-library.zip"
+        },
+        {
+          "path": "C:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "C:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "D:/**/paperboard-library.zip"
+        },
+        {
+          "path": "D:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "D:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "E:/**/paperboard-library.zip"
+        },
+        {
+          "path": "E:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "E:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "F:/**/paperboard-library.zip"
+        },
+        {
+          "path": "F:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "F:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "G:/**/paperboard-library.zip"
+        },
+        {
+          "path": "G:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "G:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "H:/**/paperboard-library.zip"
+        },
+        {
+          "path": "H:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "H:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "I:/**/paperboard-library.zip"
+        },
+        {
+          "path": "I:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "I:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "J:/**/paperboard-library.zip"
+        },
+        {
+          "path": "J:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "J:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "K:/**/paperboard-library.zip"
+        },
+        {
+          "path": "K:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "K:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "L:/**/paperboard-library.zip"
+        },
+        {
+          "path": "L:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "L:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "M:/**/paperboard-library.zip"
+        },
+        {
+          "path": "M:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "M:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "N:/**/paperboard-library.zip"
+        },
+        {
+          "path": "N:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "N:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "O:/**/paperboard-library.zip"
+        },
+        {
+          "path": "O:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "O:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "P:/**/paperboard-library.zip"
+        },
+        {
+          "path": "P:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "P:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "Q:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Q:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Q:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "R:/**/paperboard-library.zip"
+        },
+        {
+          "path": "R:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "R:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "S:/**/paperboard-library.zip"
+        },
+        {
+          "path": "S:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "S:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "T:/**/paperboard-library.zip"
+        },
+        {
+          "path": "T:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "T:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "U:/**/paperboard-library.zip"
+        },
+        {
+          "path": "U:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "U:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "V:/**/paperboard-library.zip"
+        },
+        {
+          "path": "V:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "V:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "W:/**/paperboard-library.zip"
+        },
+        {
+          "path": "W:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "W:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "X:/**/paperboard-library.zip"
+        },
+        {
+          "path": "X:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "X:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "Y:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Y:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Y:/**/pdfs/*.pdf"
+        },
+        {
+          "path": "Z:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Z:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Z:/**/pdfs/*.pdf"
         }
       ]
     },
@@ -166,6 +1606,150 @@
         },
         {
           "path": "/Volumes/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "C:/**/paperboard-library.zip"
+        },
+        {
+          "path": "C:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "D:/**/paperboard-library.zip"
+        },
+        {
+          "path": "D:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "E:/**/paperboard-library.zip"
+        },
+        {
+          "path": "E:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "F:/**/paperboard-library.zip"
+        },
+        {
+          "path": "F:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "G:/**/paperboard-library.zip"
+        },
+        {
+          "path": "G:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "H:/**/paperboard-library.zip"
+        },
+        {
+          "path": "H:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "I:/**/paperboard-library.zip"
+        },
+        {
+          "path": "I:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "J:/**/paperboard-library.zip"
+        },
+        {
+          "path": "J:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "K:/**/paperboard-library.zip"
+        },
+        {
+          "path": "K:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "L:/**/paperboard-library.zip"
+        },
+        {
+          "path": "L:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "M:/**/paperboard-library.zip"
+        },
+        {
+          "path": "M:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "N:/**/paperboard-library.zip"
+        },
+        {
+          "path": "N:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "O:/**/paperboard-library.zip"
+        },
+        {
+          "path": "O:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "P:/**/paperboard-library.zip"
+        },
+        {
+          "path": "P:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Q:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Q:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "R:/**/paperboard-library.zip"
+        },
+        {
+          "path": "R:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "S:/**/paperboard-library.zip"
+        },
+        {
+          "path": "S:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "T:/**/paperboard-library.zip"
+        },
+        {
+          "path": "T:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "U:/**/paperboard-library.zip"
+        },
+        {
+          "path": "U:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "V:/**/paperboard-library.zip"
+        },
+        {
+          "path": "V:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "W:/**/paperboard-library.zip"
+        },
+        {
+          "path": "W:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "X:/**/paperboard-library.zip"
+        },
+        {
+          "path": "X:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Y:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Y:/**/paperboard-library.zip.tmp"
+        },
+        {
+          "path": "Z:/**/paperboard-library.zip"
+        },
+        {
+          "path": "Z:/**/paperboard-library.zip.tmp"
         }
       ]
     },
@@ -177,6 +1761,78 @@
         },
         {
           "path": "/Volumes/**/pdfs"
+        },
+        {
+          "path": "C:/**/pdfs"
+        },
+        {
+          "path": "D:/**/pdfs"
+        },
+        {
+          "path": "E:/**/pdfs"
+        },
+        {
+          "path": "F:/**/pdfs"
+        },
+        {
+          "path": "G:/**/pdfs"
+        },
+        {
+          "path": "H:/**/pdfs"
+        },
+        {
+          "path": "I:/**/pdfs"
+        },
+        {
+          "path": "J:/**/pdfs"
+        },
+        {
+          "path": "K:/**/pdfs"
+        },
+        {
+          "path": "L:/**/pdfs"
+        },
+        {
+          "path": "M:/**/pdfs"
+        },
+        {
+          "path": "N:/**/pdfs"
+        },
+        {
+          "path": "O:/**/pdfs"
+        },
+        {
+          "path": "P:/**/pdfs"
+        },
+        {
+          "path": "Q:/**/pdfs"
+        },
+        {
+          "path": "R:/**/pdfs"
+        },
+        {
+          "path": "S:/**/pdfs"
+        },
+        {
+          "path": "T:/**/pdfs"
+        },
+        {
+          "path": "U:/**/pdfs"
+        },
+        {
+          "path": "V:/**/pdfs"
+        },
+        {
+          "path": "W:/**/pdfs"
+        },
+        {
+          "path": "X:/**/pdfs"
+        },
+        {
+          "path": "Y:/**/pdfs"
+        },
+        {
+          "path": "Z:/**/pdfs"
         }
       ]
     }

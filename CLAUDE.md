@@ -1,10 +1,11 @@
-# PaperBoard — 논문 문구별 노트 앱 (macOS 편집 + Android 보기 전용)
+# PaperBoard — 논문 문구별 노트 앱 (macOS·Windows 편집 + Android 보기 전용)
 
 ## 이 프로젝트가 뭔지
 
 논문 PDF를 읽으면서 **특정 단어·문장마다 전용 노트(미니 화이트보드)**를 붙이고, 나중에 본문에서 그 문구를 **클릭하면 노트가 옆에 열리는** 개인용 맥 앱. 맥에서 만든 노트를 **Android 폰에서 읽기만** 할 수 있게 한다. 단어장을 두 번 만들지 않는 게 목적.
 
-- 사용자는 1명(나). 편집은 맥에서만, 폰은 **읽기 전용**. 계정·서버 없음.
+- 사용자는 1명(나). 편집은 맥(주)·Windows 데스크톱 앱에서, 폰은 **읽기 전용**. 계정·서버 없음.
+- Windows 지원(2026-10 추가): 같은 데스크톱 코드. 단축키는 맥 ⌘ = Windows Ctrl(`src/platform.ts`), 파일 권한은 드라이브 문자(C:~Z:)까지(`scripts/capabilities.py`가 생성). 한 사람이 맥과 Windows를 동시에 편집하는 동기화는 하지 않는다(각 PC의 DB는 따로).
 - 맥 → 폰 전달은 Google Drive에 파일 하나를 올려두는 방식(한 방향). 양방향 동기화·충돌 처리는 만들지 않는다.
 - MarginNote의 "하이라이트 → 카드" 경험에서 핵심만 가져온다. 마인드맵·카드 재배열은 만들지 않는다.
 - 인용·참고문헌 관리는 Zotero가 담당하므로 이 앱의 범위가 아니다.
@@ -119,6 +120,8 @@ Note {
 - 빌드: `pnpm tauri build`
 - 타입체크: `pnpm tsc --noEmit`
 - 테스트: `pnpm vitest run`
+- Windows 크로스 빌드(맥에서): `PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc` → `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe`
+- 권한(capabilities) 수정: `scripts/capabilities.py`를 고치고 실행(생성된 JSON 직접 수정 금지)
 - Android: `pnpm android init|dev|build`, `pnpm adb devices` (환경변수는 `scripts/android-env.sh`가 설정. `~/.zshrc`는 건드리지 않는다)
 
 사전 준비(없으면 설치하고 보고): Xcode Command Line Tools, Rust(rustup), Node, pnpm. Android 빌드 도구는 `android-viewer` 스킬 참고.
@@ -159,4 +162,4 @@ Note {
 - 폰에서 편집
 - PDF 원본 수정(하이라이트를 PDF 파일에 박지 않는다. 모두 DB에만 저장)
 - 마인드맵, 카드 재배열, 플래시카드
-- 윈도우·리눅스·iOS 대응
+- 리눅스·iOS 대응

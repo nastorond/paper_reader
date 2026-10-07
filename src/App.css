@@ -6,7 +6,7 @@
   --muted: #71717a;
   --accent: #2563eb;
   --viewer-bg: #e4e4e7;
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Malgun Gothic", sans-serif;
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
@@ -309,7 +309,7 @@ button:disabled {
 }
 
 .note-content code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .note-content table {
@@ -354,7 +354,7 @@ button:disabled {
 
 .math-edit input {
   flex: 1;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13px;
   color: inherit;
   background: var(--bg);

@@ -6,6 +6,7 @@ import { Mathematics } from "@tiptap/extension-mathematics";
 import { Placeholder } from "@tiptap/extensions";
 import "katex/dist/katex.min.css";
 import { MathAutoConvert } from "./mathAutoConvert";
+import { modLabel } from "../platform";
 
 interface Props {
   initialBody: JSONContent | null;
@@ -73,8 +74,8 @@ function EditorToolbar({ editor, onMath }: { editor: Editor; onMath(m: MathEdit)
   const chain = () => editor.chain().focus();
   return (
     <div className="note-toolbar">
-      {btn("B", "굵게 (⌘B)", () => chain().toggleBold().run(), editor.isActive("bold"))}
-      {btn("I", "기울임 (⌘I)", () => chain().toggleItalic().run(), editor.isActive("italic"))}
+      {btn("B", `굵게 (${modLabel("B")})`, () => chain().toggleBold().run(), editor.isActive("bold"))}
+      {btn("I", `기울임 (${modLabel("I")})`, () => chain().toggleItalic().run(), editor.isActive("italic"))}
       {btn("H", "제목", () => chain().toggleHeading({ level: 3 }).run(), editor.isActive("heading"))}
       {btn("•", "글머리 목록", () => chain().toggleBulletList().run(), editor.isActive("bulletList"))}
       {btn("1.", "번호 목록", () => chain().toggleOrderedList().run(), editor.isActive("orderedList"))}

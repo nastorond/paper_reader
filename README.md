@@ -1,13 +1,15 @@
 # PaperBoard
 
-논문 PDF를 읽다가 **단어나 문장마다 전용 노트(미니 화이트보드)를 붙이고**, 나중에 그 문구를 누르면 노트가 옆에 열리는 개인용 macOS 앱입니다. 맥에서 정리한 노트는 **Android 폰에서 단어장처럼 읽을 수 있습니다.**
+논문 PDF를 읽다가 **단어나 문장마다 전용 노트(미니 화이트보드)를 붙이고**, 나중에 그 문구를 누르면 노트가 옆에 열리는 개인용 데스크톱 앱(macOS·Windows)입니다. 맥에서 정리한 노트는 **Android 폰에서 단어장처럼 읽을 수 있습니다.**
 
-- 편집은 맥에서만, 폰은 읽기 전용입니다. 계정이나 서버는 없고, 데이터는 모두 내 기기에 있습니다.
+- 편집은 데스크톱(맥·Windows)에서, 폰은 읽기 전용입니다. 계정이나 서버는 없고, 데이터는 모두 내 기기에 있습니다.
 - 맥에서 폰으로는 Google Drive 동기화 폴더에 파일 하나를 올리는 방식으로 전달합니다(한 방향).
 
 ---
 
-## 맥 앱 (편집기)
+## 데스크톱 앱 (편집기, macOS·Windows)
+
+> 단축키의 ⌘는 Windows에서 Ctrl입니다.
 
 ### PDF 읽기
 - 열기 버튼, `⌘O`, 창에 끌어다 놓기로 PDF를 엽니다.
@@ -88,6 +90,18 @@ pnpm tauri dev          # 맥 앱 개발 실행
 pnpm tauri build        # 맥 앱(.app) 빌드
 pnpm tsc --noEmit       # 타입체크
 pnpm vitest run         # 테스트
+```
+
+Windows:
+
+```sh
+# Windows PC에서 (필요: Visual Studio Build Tools C++, Rust, Node, pnpm)
+pnpm install
+pnpm tauri build        # → src-tauri/target/release/bundle/ 의 .msi / .exe
+
+# 또는 맥에서 크로스 빌드 (실험적, 필요: brew install nsis llvm, cargo install cargo-xwin,
+#   rustup target add x86_64-pc-windows-msvc) → .exe 설치 파일만 만들어진다
+PATH="/opt/homebrew/opt/llvm/bin:$PATH" pnpm tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
 ```
 
 Android(필요: Android Studio, SDK·NDK, rustup Android 타깃. 환경변수는 `scripts/android-env.sh`가 설정):

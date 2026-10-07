@@ -22,6 +22,7 @@ import {
 import { DEFAULT_HIGHLIGHT_COLOR, type Highlight } from "./store/types";
 import { devLog } from "./dev/devLog";
 import { NotePanel, type NoteTab } from "./note/NotePanel";
+import { isModKey } from "./platform";
 import { HighlightList } from "./sidebar/HighlightList";
 import { readingOrder } from "./sidebar/order";
 import { RecentList } from "./recent/RecentList";
@@ -369,10 +370,10 @@ export default function App() {
 
   const goToPage = useCallback((index: number) => viewerRef.current?.scrollToPage(index), []);
 
-  // 단축키: ⌘O 열기, ⌘= / ⌘- 확대/축소, ⌘0 폭 맞춤
+  // 단축키(맥 ⌘ / Windows Ctrl): O 열기, = / - 확대/축소, 0 폭 맞춤
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!e.metaKey || inBoard(e.target)) return;
+      if (!isModKey(e) || inBoard(e.target)) return;
       if (e.key === "o") {
         e.preventDefault();
         void openDialog();

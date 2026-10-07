@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { modLabel } from "./platform";
 
 interface Props {
   title: string | null;
@@ -35,7 +36,7 @@ export function Toolbar(props: Props) {
 
   return (
     <header className="toolbar">
-      <button onClick={props.onOpen} title="PDF 열기 (⌘O)">
+      <button onClick={props.onOpen} title={`PDF 열기 (${modLabel("O")})`}>
         열기
       </button>
       <button className={props.recentOpen ? "active" : ""} onClick={props.onToggleRecent} title="최근 문서">
@@ -72,14 +73,14 @@ export function Toolbar(props: Props) {
         </button>
       </div>
       <div className="toolbar-group">
-        <button disabled={!hasDoc} onClick={props.onZoomOut} title="축소 (⌘−)">
+        <button disabled={!hasDoc} onClick={props.onZoomOut} title={`축소 (${modLabel("−")})`}>
           −
         </button>
         <span className="zoom-label">{Math.round(scale * 100)}%</span>
-        <button disabled={!hasDoc} onClick={props.onZoomIn} title="확대 (⌘+)">
+        <button disabled={!hasDoc} onClick={props.onZoomIn} title={`확대 (${modLabel("+")})`}>
           +
         </button>
-        <button disabled={!hasDoc} onClick={props.onFitWidth} title="폭 맞춤 (⌘0)">
+        <button disabled={!hasDoc} onClick={props.onFitWidth} title={`폭 맞춤 (${modLabel("0")})`}>
           폭 맞춤
         </button>
       </div>
