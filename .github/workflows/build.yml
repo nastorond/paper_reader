@@ -1,6 +1,7 @@
 # 앱 빌드: Actions 탭에서 "Run workflow" 를 누르거나, v 로 시작하는 태그(예: v0.2.0)를 올리면 실행된다.
 # 결과 파일은 실행 화면 아래 Artifacts 에서 받는다.
-#   - macOS(Apple Silicon) .dmg, Windows .exe/.msi: 서명 없음(처음 열 때 경고가 뜰 수 있음)
+#   - Windows .exe/.msi: 서명 없음(처음 열 때 SmartScreen 경고가 뜰 수 있음)
+#   - macOS 는 여기서 빌드하지 않는다(맥에서 직접 `pnpm tauri build`)
 #   - Android .apk: 저장소 Secrets 에 서명 키가 있을 때만(아래 android 작업 참고)
 name: Build
 
@@ -15,10 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact: PaperBoard-macos
-            files: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: PaperBoard-windows

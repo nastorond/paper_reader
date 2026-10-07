@@ -116,7 +116,7 @@ pnpm adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/releas
 ### GitHub Actions
 
 - **CI**(`.github/workflows/ci.yml`): `master` 푸시와 PR마다 타입체크와 테스트를 돌립니다.
-- **Build**(`.github/workflows/build.yml`): Actions 탭에서 "Run workflow"를 누르거나 `v0.2.0` 같은 태그를 올리면, macOS `.dmg`·Windows `.exe`/`.msi`·Android `.apk`를 빌드해 실행 결과의 Artifacts에 올립니다.
+- **Build**(`.github/workflows/build.yml`): Actions 탭에서 "Run workflow"를 누르거나 `v0.2.0` 같은 태그를 올리면, Windows `.exe`/`.msi`·Android `.apk`를 빌드해 실행 결과의 Artifacts에 올립니다. macOS 앱은 맥에서 직접 `pnpm tauri build`로 만듭니다.
   - Android는 저장소 Settings → Secrets and variables → Actions에 서명 키를 넣었을 때만 빌드합니다:
     - `ANDROID_KEYSTORE_BASE64`: `base64 -i src-tauri/gen/android/paperboard-release.jks`의 출력
     - `ANDROID_KEYSTORE_PASSWORD`: `src-tauri/gen/android/keystore.properties`의 `password` 값
