@@ -2,8 +2,21 @@
 
 논문 PDF를 읽다가 **단어나 문장마다 전용 노트(미니 화이트보드)를 붙이고**, 나중에 그 문구를 누르면 노트가 옆에 열리는 개인용 데스크톱 앱(macOS·Windows)입니다. 맥에서 정리한 노트는 **Android 폰에서 단어장처럼 읽을 수 있습니다.**
 
-- 편집은 데스크톱(맥·Windows)에서, 폰은 읽기 전용입니다. 계정이나 서버는 없고, 데이터는 모두 내 기기에 있습니다.
-- 맥에서 폰으로는 Google Drive 동기화 폴더에 파일 하나를 올리는 방식으로 전달합니다(한 방향).
+- 편집은 데스크톱(맥·Windows)에서, 폰은 읽기 전용입니다. 계정이나 서버는 없고, 데이터는 모두 내 기기와 내 Google Drive에 있습니다.
+- 데스크톱에서 폰으로는 Google Drive 동기화 폴더에 파일 하나를 올리는 방식으로 전달합니다(한 방향).
+- 맥과 Windows를 번갈아 쓰면, 같은 Drive 폴더를 거쳐 PC끼리 하이라이트·노트가 맞춰집니다.
+- 데스크톱 앱은 새 버전이 나오면 스스로 업데이트합니다.
+
+## 내려받기
+
+[최신 릴리스](https://github.com/nastorond/paper_reader/releases/latest)에서 받습니다. 처음 한 번만 설치하면 이후로는 앱이 업데이트를 알려 줍니다.
+
+- **Windows**: `PaperBoard_<버전>_x64-setup.exe`
+  - 코드 서명이 없어 SmartScreen 경고가 뜨면 "추가 정보" → "실행"을 누릅니다.
+- **macOS (Apple Silicon)**: `PaperBoard_<버전>_aarch64.dmg`
+  - 열어서 응용 프로그램 폴더로 옮깁니다.
+  - "손상되었습니다"가 뜨면 터미널에서 `xattr -dr com.apple.quarantine /Applications/PaperBoard.app`을 한 번 실행합니다.
+- **Android**: 릴리스에 올리지 않습니다. 맥에서 빌드해 직접 설치합니다(아래 "설치·실행").
 
 ---
 
@@ -42,7 +55,7 @@
 - **마크다운 내보내기**: 현재 논문의 하이라이트(문구, 페이지)와 노트를 `.md` 파일 하나로 저장합니다.
 
 ### 폰용 번들 내보내기
-- "번들" 메뉴에서 저장할 폴더를 고르면, 라이브러리 전체를 `paperboard-library.zip` 하나로 저장합니다.
+- 툴바의 "Drive" 메뉴에서 저장할 폴더를 고르면, 라이브러리 전체를 `paperboard-library.zip` 하나로 저장합니다.
   - 보통 Google Drive 데스크톱 앱의 동기화 폴더를 고릅니다.
   - 노트 본문은 HTML로 렌더링해 넣습니다(수식 포함).
   - 보드는 SVG 그림으로 바꿔 넣습니다.
@@ -59,6 +72,10 @@
 - PC를 번갈아 쓰는 용도입니다. 두 PC에서 같은 노트를 동시에 고치지 마세요.
 - PDF 파일은 PC마다 따로 있어야 합니다. 이름·폴더는 달라도 내용이 같으면 같은 논문으로 인식합니다. 그 PC에 PDF가 없으면, "PDF 원문도 함께 올리기"로 Drive에 올려 둔 사본으로 최근 문서를 엽니다.
 - 폰 번들 자동 내보내기는 한 PC에서만 켜 두세요.
+
+### 자동 업데이트
+- 앱을 켤 때 새 버전이 있으면 화면 아래에 "새 버전 X — 업데이트하고 다시 시작"이 뜹니다. 누르면 받아서 설치하고 다시 시작합니다.
+- 하이라이트·노트·설정은 그대로 유지됩니다. 받은 파일은 서명을 확인한 뒤에만 설치합니다.
 
 ---
 
@@ -84,10 +101,11 @@
 
 ## 쓰는 흐름
 
-1. 맥에서 PDF를 열고, 모르는 단어나 중요한 문장을 드래그한 뒤 `H`를 누릅니다.
+1. 맥(또는 Windows)에서 PDF를 열고, 모르는 단어나 중요한 문장을 드래그한 뒤 `H`를 누릅니다.
 2. 열린 노트에 설명, 수식, 그림을 적습니다.
-3. "번들"에서 Google Drive의 PaperBoard 폴더를 고르고 자동 다시 쓰기를 켭니다. 원문도 폰에서 보려면 "PDF 원문도 함께 올리기"도 켭니다.
-4. 폰 앱에서 그 폴더를 연결하면, 이후로는 맥에서 정리한 내용이 Drive 동기화를 거쳐 폰 단어장에 들어옵니다.
+3. "Drive" 메뉴에서 Google Drive의 PaperBoard 폴더를 고르고 자동 다시 쓰기를 켭니다. 원문도 폰에서 보려면 "PDF 원문도 함께 올리기"도 켭니다.
+4. 폰 앱에서 그 폴더를 연결하면, 이후로는 정리한 내용이 Drive 동기화를 거쳐 폰 단어장에 들어옵니다.
+5. 다른 PC도 쓰면, 그 PC에서도 같은 폴더를 고르고 "다른 PC와 동기화"를 켭니다. 두 PC 모두 켜 두면 서로 맞춰집니다. 폰 번들 자동 내보내기는 한 PC에서만 켭니다.
 
 ---
 
@@ -107,8 +125,9 @@ Windows:
 
 ```sh
 # Windows PC에서 (필요: Visual Studio Build Tools C++, Rust, Node, pnpm)
+# 업데이트 서명 키 없이 빌드할 때는 업데이트 파일 생성을 끈다
 pnpm install
-pnpm tauri build        # → src-tauri/target/release/bundle/ 의 .msi / .exe
+pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":false}}'   # → src-tauri/target/release/bundle/ 의 .msi / .exe
 
 # 또는 맥에서 크로스 빌드 (실험적, 필요: brew install nsis llvm, cargo install cargo-xwin,
 #   rustup target add x86_64-pc-windows-msvc) → .exe 설치 파일만 만들어진다
@@ -127,12 +146,15 @@ pnpm adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/releas
 ### GitHub Actions
 
 - **CI**(`.github/workflows/ci.yml`): `master` 푸시와 PR마다 타입체크와 테스트를 돌립니다.
-- **Build**(`.github/workflows/build.yml`): Actions 탭에서 "Run workflow"를 누르거나 `v0.2.0` 같은 태그를 올리면, Windows `.exe`/`.msi`·Android `.apk`를 빌드해 실행 결과의 Artifacts에 올립니다. macOS 앱은 맥에서 직접 `pnpm tauri build`로 만듭니다.
+- **Build**(`.github/workflows/build.yml`)
+  - **태그 푸시**(`v0.3.0` 등, 아래 "새 버전 내기"): macOS·Windows를 빌드해 GitHub Release와 업데이트 정보(`latest.json`)를 올립니다. 설치된 앱은 이걸 보고 자동 업데이트합니다.
+  - **수동 실행**(Actions 탭 → Build → Run workflow): Windows 설치 파일만 빌드해 실행 결과의 Artifacts에 올립니다(업데이트 서명 없음).
   - Android는 저장소 Settings → Secrets and variables → Actions에 서명 키를 넣었을 때만 빌드합니다:
     - `ANDROID_KEYSTORE_BASE64`: `base64 -i src-tauri/gen/android/paperboard-release.jks`의 출력
     - `ANDROID_KEYSTORE_PASSWORD`: `src-tauri/gen/android/keystore.properties`의 `password` 값
+- 공개 저장소라 GitHub가 제공하는 실행 서버(Linux·Windows·macOS) 사용은 무료이고 시간 제한도 없습니다. 비공개로 바꾸면 월 무료 한도가 적용되고, macOS 실행 시간은 10배로 계산됩니다.
 
-### 자동 업데이트 (macOS·Windows)
+### 자동 업데이트 (macOS·Windows) — 만드는 쪽
 
 설치된 앱은 켜질 때 GitHub Releases의 최신 버전을 확인합니다. 새 버전이 있으면 화면 아래에 "업데이트하고 다시 시작"이 뜹니다. 받은 파일은 앱에 넣어 둔 공개 키로 서명을 확인한 뒤에만 설치합니다.
 
@@ -151,10 +173,11 @@ git push origin master && git push origin v0.3.0         # 태그 푸시 → Act
 
 ## 데이터 위치
 
-- 맥 앱 DB: `~/Library/Application Support/PaperBoard/paperboard.db`. 개발 실행 중에는 프로젝트 안 `.dev-data/`를 씁니다.
+- 데스크톱 앱 DB: 맥 `~/Library/Application Support/PaperBoard/paperboard.db`, Windows `%APPDATA%\PaperBoard\paperboard.db`. 개발 실행 중에는 프로젝트 안 `.dev-data/`를 씁니다.
+- Drive 폴더(직접 고른 곳): `paperboard-library.zip`(폰 번들), `pdfs/`(PDF 원문 사본, 선택), `sync/`(PC 간 동기화 파일)
 - PDF 원본은 복사하지 않고 경로만 기억합니다. 하이라이트를 PDF 파일에 써 넣지 않습니다.
 - 앱은 업데이트 확인(GitHub Releases) 말고는 외부와 통신하지 않습니다. 폰으로 전달하는 일은 Google Drive 데스크톱 앱이 맡습니다.
 
 ## 기술 스택
 
-Tauri v2 · React · TypeScript · Vite · pdf.js · TipTap · KaTeX · Excalidraw · SQLite(tauri-plugin-sql) · fflate
+Tauri v2(updater 포함) · React · TypeScript · Vite · pdf.js · TipTap · KaTeX · Excalidraw · SQLite(tauri-plugin-sql) · fflate
