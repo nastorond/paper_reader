@@ -8,8 +8,8 @@ const host = process.env.TAURI_DEV_HOST;
 
 // 런타임에 불러오는 라이브러리 정적 리소스. 외부 CDN 대신 앱에 포함한다.
 // 개발 중에는 Vite 가 /node_modules/... 경로를 그대로 서빙하고, 빌드 시에는 dist/ 아래로 복사한다.
-// - pdf.js: CJK cmap, 표준 폰트, wasm 디코더 → dist/pdfjs/ (src/pdf/pdfjs.ts 의 PDFJS_ASSET_BASE)
-// - Excalidraw: 손글씨 등 글꼴 → dist/excalidraw/fonts/ (src/note/BoardEditor.tsx 의 EXCALIDRAW_ASSET_PATH)
+// - pdf.js: CJK cmap, 표준 폰트, wasm 디코더 → dist/pdfjs/ (src/services/pdf/pdfjs.ts 의 PDFJS_ASSET_BASE)
+// - Excalidraw: 손글씨 등 글꼴 → dist/excalidraw/fonts/ (src/services/excalidrawAssets.ts 의 EXCALIDRAW_ASSET_PATH)
 const COPIED_ASSETS: [from: string, to: string][] = [
   ...["cmaps", "standard_fonts", "wasm", "iccs"].map((d): [string, string] => [`pdfjs-dist/${d}`, `pdfjs/${d}`]),
   ["@excalidraw/excalidraw/dist/prod/fonts", "excalidraw/fonts"],
