@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import { check, type Update } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
+import { checkForUpdate, installUpdate, type Update } from "../../services/update/updater";
 
-// 자동 업데이트(데스크톱). 앱이 켜질 때 GitHub Releases 의 latest.json 을 확인하고,
-// 새 버전이 있으면 화면 아래에 안내를 띄운다. 누르면 받아서 설치하고 다시 시작한다.
-// 받은 파일은 tauri.conf.json 의 공개 키로 서명을 확인한 뒤에만 설치된다.
+// 자동 업데이트 안내(데스크톱). 앱이 켜질 때 새 버전을 확인하고(services/update/updater.ts),
+// 있으면 화면 아래에 안내를 띄운다. 누르면 받아서 설치하고 다시 시작한다.
 // 네트워크 연결이 없거나 확인에 실패하면 조용히 넘어간다(앱 사용에는 영향 없음).
 type State =
   | { kind: "idle" }
@@ -19,7 +17,7 @@ export function UpdateBanner() {
   useEffect(() => {
     if (import.meta.env.DEV) return; // 개발 실행에서는 확인하지 않는다
     let cancelled = false;
-    check()
+    checkForUpdate()
       .then((update) => {
         if (!cancelled && update) setState({ kind: "available", update });
       })
@@ -30,18 +28,9 @@ export function UpdateBanner() {
   }, []);
 
   const install = async (update: Update) => {
-    let total = 0;
-    let done = 0;
     setState({ kind: "downloading", percent: null });
     try {
-      await update.downloadAndInstall((ev) => {
-        if (ev.event === "Started") total = ev.data.contentLength ?? 0;
-        else if (ev.event === "Progress") {
-          done += ev.data.chunkLength;
-          setState({ kind: "downloading", percent: total ? Math.round((100 * done) / total) : null });
-        }
-      });
-      await relaunch();
+      await installUpdate(update, (percent) => setState({ kind: "downloading", percent }));
     } catch (e) {
       console.error(e);
       setState({ kind: "error", message: e instanceof Error ? e.message : String(e) });

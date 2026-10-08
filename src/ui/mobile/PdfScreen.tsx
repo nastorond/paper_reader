@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { readFile } from "@tauri-apps/plugin-fs";
 import { PdfViewer } from "../pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "../../services/pdf/pdfjs";
 import { fitWidthScale, zoomIn, zoomOut } from "../../logic/pdf/zoom";
 import type { BundleDocument, BundleHighlight } from "../../logic/bundle/schema";
 import type { Highlight } from "../../logic/types";
-import { loadCachedPdf, saveCachedPdf } from "../../services/viewer/cache";
+import { loadDocumentPdf } from "../../services/viewer/pdfSource";
 
 interface Props {
   document: BundleDocument;
@@ -29,12 +28,7 @@ export default function PdfScreen({ document: doc, highlights, focusId, pdfUri, 
     let loadedPdf: PDFDocumentProxy | null = null;
     void (async () => {
       try {
-        let data = await loadCachedPdf(doc.id).catch(() => null);
-        if (!data) {
-          if (!pdfUri) throw new Error("폴더에 이 논문의 PDF 가 없습니다. 맥에서 \"PDF 원문도 함께 올리기\"를 켜고 내보내 주세요.");
-          data = await readFile(pdfUri);
-          await saveCachedPdf(doc.id, data);
-        }
+        const data = await loadDocumentPdf(doc.id, pdfUri);
         // loadPdf 는 데이터를 워커로 넘기므로(transfer) 캐시에 넣은 뒤 사본을 넘긴다.
         const p = await loadPdf(data.slice());
         if (cancelled) return void p.loadingTask.destroy();

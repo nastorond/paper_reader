@@ -178,6 +178,22 @@ git push origin master && git push origin v0.3.0         # 태그 푸시 → Act
 - PDF 원본은 복사하지 않고 경로만 기억합니다. 하이라이트를 PDF 파일에 써 넣지 않습니다.
 - 앱은 업데이트 확인(GitHub Releases) 말고는 외부와 통신하지 않습니다. 폰으로 전달하는 일은 Google Drive 데스크톱 앱이 맡습니다.
 
+## 코드 구조
+
+```
+src/
+  logic/      순수 로직(PDF 글자 위치, 좌표 변환, 동기화 합치기, 번들 형식, 마크다운·HTML 변환 …) + 테스트
+  services/   바깥과 입출력(SQLite, 파일·Drive 폴더, Tauri 플러그인, 자동 업데이트, pdf.js)
+  ui/
+    desktop/  데스크톱 편집기 화면
+    mobile/   Android 뷰어 화면
+    pdf/      두 화면이 함께 쓰는 PDF 뷰어·하이라이트 레이어
+    hooks/    화면 상태·부수효과 훅(문서, 하이라이트, 동기화, 번들, 단축키 …)
+  dev/        개발 모드 자가 테스트·진단
+```
+
+의존 방향은 `ui → services → logic` 한쪽뿐입니다.
+
 ## 기술 스택
 
 Tauri v2(updater 포함) · React · TypeScript · Vite · pdf.js · TipTap · KaTeX · Excalidraw · SQLite(tauri-plugin-sql) · fflate

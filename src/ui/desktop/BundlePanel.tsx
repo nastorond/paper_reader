@@ -1,4 +1,4 @@
-import { open } from "@tauri-apps/plugin-dialog";
+import { pickDriveFolder } from "../../services/dialogs";
 import { formatDate } from "../../logic/format";
 import type { BundleState } from "../hooks/useBundleExport";
 import { BUNDLE_FILE_NAME } from "../../logic/bundle/schema";
@@ -29,8 +29,8 @@ export function BundlePanel({
   onSyncNow,
 }: Props) {
   const pickDir = async () => {
-    const dir = await open({ directory: true, multiple: false, title: "번들을 저장할 폴더 (예: Google Drive 의 PaperBoard 폴더)" });
-    if (typeof dir === "string") onSetDir(dir);
+    const dir = await pickDriveFolder();
+    if (dir) onSetDir(dir);
   };
   return (
     <div className="bundle-popover" role="dialog">

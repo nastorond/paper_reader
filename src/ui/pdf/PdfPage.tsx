@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
-import { devLog } from "../../dev/devLog";
 import { readTextContent } from "../../services/pdf/textContent";
-import { selectTextInLayer } from "../../dev/selectText";
+import { devAfterTextLayer } from "../../dev/textLayerChecks";
 import {
   AnnotationMode,
   OPS,
@@ -80,14 +79,7 @@ export function PdfPage({ doc, index, size, scale, active, highlights, selectedH
         layer.update({ viewport: page.getViewport({ scale: scaleRef.current }) });
         textLayerRef.current = layer;
       }
-      if (import.meta.env.DEV) {
-        reportTextLayer(index, container, segments, layer ? "pdfjs" : "segments", scaleRef.current);
-        const needle = import.meta.env.VITE_DEV_SELECT_TEXT;
-        if (needle && selectTextInLayer(container, needle) && import.meta.env.VITE_DEV_PRESS_H) {
-          // 자가 테스트: 선택 후 H 키를 누른 것처럼 이벤트를 보낸다.
-          setTimeout(() => window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyH", key: "h" })), 300);
-        }
-      }
+      if (import.meta.env.DEV) devAfterTextLayer(index, container, segments, layer ? "pdfjs" : "segments", scaleRef.current);
     })().catch(reportError);
     return () => {
       cancelled = true;
@@ -186,28 +178,4 @@ async function readSegments(page: PDFPageProxy): Promise<TextSegment[]> {
   const opList = await page.getOperatorList({ annotationMode: AnnotationMode.DISABLE });
   const getFont = (name: string) => (page.commonObjs.has(name) ? (page.commonObjs.get(name) as FontLike) : null);
   return buildSegments(extractGlyphs(opList.fnArray, opList.argsArray, OPS, getFont));
-}
-
-// 개발 진단: 텍스트 레이어 span 의 실제 폭이 PDF 상 폭(× 배율)과 맞는지 터미널로 보고한다.
-function reportTextLayer(index: number, container: HTMLElement, segments: TextSegment[], mode: string, scale: number) {
-  requestAnimationFrame(() => {
-    const spans = Array.from(container.querySelectorAll<HTMLElement>("span:not(.eol)"));
-    const errors: number[] = [];
-    if (mode === "segments") {
-      spans.forEach((span, i) => {
-        const seg = segments[i];
-        if (!seg || Math.abs(seg.angle) > 1e-3 || seg.width * scale < 20) return;
-        errors.push(Math.abs(span.getBoundingClientRect().width / (seg.width * scale) - 1));
-      });
-    }
-    errors.sort((a, b) => a - b);
-    devLog(
-      `page ${index + 1}: mode=${mode} spans=${spans.length} lang="${container.lang}"`,
-      `widthErr median=${pct(errors[errors.length >> 1])} max=${pct(errors[errors.length - 1])}`,
-    );
-  });
-}
-
-function pct(v: number | undefined) {
-  return v === undefined ? "-" : `${(v * 100).toFixed(1)}%`;
 }

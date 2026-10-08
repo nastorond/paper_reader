@@ -2,11 +2,9 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/react";
 import { NoteEditor } from "./NoteEditor";
 import { createDebouncedSaver } from "../../../logic/debouncedSaver";
-import { getDb } from "../../../services/db/tauriDb";
-import { getNote, saveNoteBoard, saveNoteBody } from "../../../services/db/db";
+import { loadNote, saveBoard, saveBody } from "../../../services/notes";
 import { HIGHLIGHT_COLORS, type Highlight } from "../../../logic/types";
 import { devLog } from "../../../dev/devLog";
-import { notifyLibraryChanged } from "../../../services/libraryEvents";
 
 // Excalidraw 는 무거워서 보드 탭을 처음 열 때 불러온다.
 const BoardEditor = lazy(() => import("./BoardEditor"));
@@ -36,8 +34,7 @@ export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJ
 
   useEffect(() => {
     let cancelled = false;
-    getDb()
-      .then((db) => getNote(db, highlight.id))
+    loadNote(highlight.id)
       .then((note) => {
         if (cancelled) return;
         bodyRef.current = (note?.body as JSONContent | null | undefined) ?? null;
@@ -60,7 +57,6 @@ export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJ
         try {
           await save(v);
           setSaveState("saved");
-          notifyLibraryChanged();
           devLog(`${what} saved ${highlight.id}: ${JSON.stringify(v).slice(0, 160)}`);
         } catch (e) {
           console.error(e);
@@ -68,8 +64,8 @@ export function NotePanel({ highlight, autoFocus, tab, onTabChange, onClose, onJ
         }
       }, 500);
     return {
-      body: wrap("note", async (v) => saveNoteBody(await getDb(), highlight.id, v, new Date().toISOString())),
-      board: wrap("board", async (v) => saveNoteBoard(await getDb(), highlight.id, v, new Date().toISOString())),
+      body: wrap("note", (v) => saveBody(highlight.id, v)),
+      board: wrap("board", (v) => saveBoard(highlight.id, v)),
     };
   }, [highlight.id]);
   useEffect(

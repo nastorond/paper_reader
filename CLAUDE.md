@@ -158,6 +158,12 @@ Note {
 - 요청과 상관없는 코드는 리팩터링하지 않는다.
 - 좌표 변환, DB 저장/로드 같은 순수 로직은 vitest로 테스트를 붙인다.
 - 컴포넌트는 작게 나누고, PDF 렌더링 / 하이라이트 레이어 / 노트 패널 / 저장소를 분리한다.
+- **코드 구조(계층별)** — 의존 방향은 `ui → services → logic` 한쪽만:
+  - `src/logic/`: 순수 로직(계산·규칙·형식 변환). React·Tauri·DOM·파일을 모른다. 단위 테스트는 주로 여기.
+  - `src/services/`: 바깥과 입출력(SQLite, 파일·Drive 폴더, Tauri 플러그인, 업데이트, pdf.js 로드). `ui/`를 import 하지 않는다.
+  - `src/ui/`: 화면. `desktop/`(편집기), `mobile/`(Android 뷰어), `pdf/`(둘이 함께 쓰는 PDF 화면), `hooks/`(상태·부수효과 훅).
+    컴포넌트(.tsx)는 Tauri·DB를 직접 부르지 않고 hooks/services 를 쓴다. `App.tsx`·`ViewerApp.tsx`는 배치와 훅 조합만.
+  - `src/dev/`: 개발 모드 자가 테스트(VITE_DEV_*)와 진단. 화면 코드에는 `if (import.meta.env.DEV) dev함수()` 한 줄만 둔다.
 - 나는 C++ 배경이고 Rust·React는 깊게 안 써봤다. Rust 쪽이나 낯선 패턴을 쓰면 왜 그렇게 했는지 한두 줄로 설명한다.
 - 커밋은 마일스톤 단위로, 메시지는 한국어로 무엇을 했는지 한 줄.
 
