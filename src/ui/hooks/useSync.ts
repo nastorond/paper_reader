@@ -5,6 +5,7 @@ import { getSetting, setSetting } from "../../services/db/db";
 import { createDebouncedSaver } from "../../logic/debouncedSaver";
 import { notifyLibraryChanged, onLibraryChanged } from "../../services/libraryEvents";
 import { getDevice, mergeOthers, writeMySnapshot, type Device, type MergeResult } from "../../services/sync/syncFiles";
+import { copyLibraryPdfs } from "../../services/bundle/exportBundle";
 import { devLog } from "../../dev/devLog";
 
 const KEY_ENABLED = "sync.enabled";
@@ -21,8 +22,13 @@ export interface SyncState {
 }
 
 // PC 간 동기화(같은 Drive 폴더의 sync/). dir 은 번들 폴더.
+// includePdfs: "PDF 원문도 함께 올리기"가 켜져 있으면 동기화할 때 PDF 원문도 pdfs/ 에 복사한다.
 // onRemoteApplied: 다른 PC 내용을 합쳐 DB 가 바뀌었을 때(화면 다시 읽기·안내용)
-export function useSync(dir: string | null, onRemoteApplied: (results: MergeResult[]) => void) {
+export function useSync(
+  dir: string | null,
+  includePdfs: boolean,
+  onRemoteApplied: (results: MergeResult[]) => void,
+) {
   const [state, setState] = useState<SyncState>({
     enabled: false,
     device: null,
@@ -49,12 +55,13 @@ export function useSync(dir: string | null, onRemoteApplied: (results: MergeResu
     if (!dir || !state.device) return;
     try {
       await writeMySnapshot(dir, state.device);
+      if (includePdfs) await copyLibraryPdfs(dir);
       setState((s) => ({ ...s, lastSyncAt: new Date().toISOString(), status: "idle", error: null }));
     } catch (e) {
       console.error("sync write failed", e);
       setState((s) => ({ ...s, status: "error", error: e instanceof Error ? e.message : String(e) }));
     }
-  }, [dir, state.device]);
+  }, [dir, state.device, includePdfs]);
 
   // 다른 PC 파일을 읽어 합치고, 바뀐 게 있으면 내 파일도 다시 쓴다(서로 같은 상태가 되면 멈춘다).
   const merge = useCallback(async () => {
@@ -71,6 +78,7 @@ export function useSync(dir: string | null, onRemoteApplied: (results: MergeResu
         notifyLibraryChanged(); // 폰용 번들도 최신으로(이 PC 에서 번들 자동 내보내기를 켠 경우)
       }
       await writeMySnapshot(dir, state.device);
+      if (includePdfs) await copyLibraryPdfs(dir);
       setState((s) => ({ ...s, lastSyncAt: new Date().toISOString(), status: "idle", error: null }));
     } catch (e) {
       console.error("sync merge failed", e);
@@ -78,7 +86,7 @@ export function useSync(dir: string | null, onRemoteApplied: (results: MergeResu
     } finally {
       busyRef.current = false;
     }
-  }, [dir, state.device]);
+  }, [dir, state.device, includePdfs]);
 
   // 켜질 때(앱 시작·설정 켬) 한 번, 이후 3분마다
   useEffect(() => {

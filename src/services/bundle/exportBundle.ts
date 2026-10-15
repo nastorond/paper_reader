@@ -41,10 +41,10 @@ export async function exportBundleTo(dir: string, includePdfs = false): Promise<
     }
   }
 
-  // PDF 원문: 하이라이트가 있는 문서만, 폴더에 아직 없을 때 한 번 복사
+  // PDF 원문: 모든 문서(하이라이트가 없어도), 폴더에 아직 없을 때 한 번 복사
   const pdf = includePdfs
-    ? await copyPdfs(dir, lib.documents.filter((d) => lib.highlights.some((h) => h.documentId === d.id)))
-    : { present: new Set<string>(), copied: 0, missing: [] as string[] };
+    ? await copyPdfs(dir, lib.documents)
+    :  { present: new Set<string>(), copied: 0, missing: [] as string[] };
 
   const library = buildLibrary(
     lib.documents,
@@ -69,6 +69,12 @@ export async function exportBundleTo(dir: string, includePdfs = false): Promise<
   };
 }
 
+// PC 간 동기화용: 번들은 쓰지 않고 PDF 원문만 dir/pdfs/ 에 복사한다.
+export async function copyLibraryPdfs(dir: string) {
+  const { documents } = await listLibrary(await getDb());
+  return copyPdfs(dir, documents);
+}
+
 // dir/pdfs/<문서 id>.pdf 로 복사. 이미 있으면 건너뛴다(내용 해시가 이름이라 바뀔 일이 없다).
 // 원본 경로의 파일 내용이 문서 id(해시)와 다르면 다른 파일이므로 복사하지 않는다.
 async function copyPdfs(dir: string, docs: DocumentRecord[]) {
@@ -82,6 +88,8 @@ async function copyPdfs(dir: string, docs: DocumentRecord[]) {
       present.add(d.id);
       continue;
     }
+    // 다른 PC 에서 동기화로만 들어온 문서(이 PC 에 원본 경로가 없음)는 그 PC 가 올린다.
+    if (!d.path) continue;
     try {
       if (!(await exists(d.path))) throw new Error("not found");
       const data = await readFile(d.path);
