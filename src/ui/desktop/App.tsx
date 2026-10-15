@@ -63,7 +63,7 @@ export default function App() {
     },
     [docs, status],
   );
-  const sync = useSync(bundle.state.dir, onRemoteApplied);
+  const sync = useSync(bundle.state.dir, bundle.state.includePdfs, onRemoteApplied);
 
   const createHighlight = () => void hl.create(viewerRef.current?.draftFromSelection());
 
