@@ -139,8 +139,15 @@ export default function PdfScreen({
           {pdf ? `${page + 1} / ${pdf.numPages}` : ""}
         </span>
         {canSplit && (
-          <button className={panelOpen ? "active" : ""} aria-pressed={panelOpen} onClick={togglePanel}>
-            노트 패널
+          // 둥근 스위치: 손잡이가 왼쪽(꺼짐)·오른쪽(켜짐)으로 움직인다. 손잡이는 반투명이라 글씨가 비친다.
+          <button
+            className={panelOpen ? "panel-switch on" : "panel-switch"}
+            role="switch"
+            aria-checked={panelOpen}
+            onClick={togglePanel}
+          >
+            <span className="panel-switch-label">노트 패널</span>
+            <span className="panel-switch-knob" aria-hidden />
           </button>
         )}
         <button disabled={!scale} onClick={() => setScale((s) => (s ? zoomOut(s) : s))}>
