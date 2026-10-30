@@ -1,25 +1,32 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import "katex/dist/katex.min.css";
 import { filterVocab, paperItems, paperSummaries, vocabItems, type VocabItem } from "../../logic/viewer/vocab";
+import type { LocalPdf } from "../../logic/viewer/localPdfs";
+import { loadDocumentPdf } from "../../services/viewer/pdfSource";
 import { useBundleSource } from "../hooks/useBundleSource";
+import { useLocalPdfs } from "../hooks/useLocalPdfs";
+import { LocalPdfList } from "./LocalPdfList";
 import "./viewer.css";
 
 // 원문 보기는 pdf.js 를 쓰므로 필요할 때만 불러온다.
 const PdfScreen = lazy(() => import("./PdfScreen"));
 
-// 화면 쌓기: (단어장|논문) → 논문 → 노트 상세 → 원문. Android 뒤로 가기(popstate)로 한 단계씩 돌아간다.
+// 화면 쌓기: (단어장|논문|PDF) → 논문 → 노트 상세 → 원문. Android 뒤로 가기(popstate)로 한 단계씩 돌아간다.
+// local: 기기의 PDF 파일(PDF 리더). 번들에 같은 논문(내용 해시)이 있으면 그 하이라이트를 함께 보여준다.
 type View =
   | { kind: "paper"; documentId: string }
   | { kind: "detail"; item: VocabItem }
-  | { kind: "pdf"; documentId: string; focusId?: string };
+  | { kind: "pdf"; documentId: string; focusId?: string }
+  | { kind: "local"; pdf: LocalPdf };
 
-// Android 뷰어(읽기 전용 단어장) 화면. 번들 읽기·새로고침은 useBundleSource 에 있다.
+// Android 뷰어(읽기 전용 단어장 + PDF 리더) 화면. 번들 읽기·새로고침은 useBundleSource, 기기 PDF 는 useLocalPdfs 에 있다.
 export default function ViewerApp() {
   const { loaded, source, busy, message, notice, connectFolder, pickFile, refresh } = useBundleSource();
+  const local = useLocalPdfs();
   const [query, setQuery] = useState("");
   const [docFilter, setDocFilter] = useState<string | null>(null);
   const [stack, setStack] = useState<View[]>([]);
-  const [tab, setTab] = useState<"vocab" | "papers">("vocab");
+  const [tab, setTab] = useState<"vocab" | "papers" | "local">("vocab");
 
   // 화면 쌓기 + Android 뒤로 가기
   const push = useCallback((v: View) => {
@@ -35,6 +42,33 @@ export default function ViewerApp() {
   const items = useMemo(() => (loaded ? vocabItems(loaded.library) : []), [loaded]);
   const visible = useMemo(() => filterVocab(items, docFilter, query), [items, docFilter, query]);
   const papers = useMemo(() => (loaded ? paperSummaries(loaded.library) : []), [loaded]);
+  const highlightCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const h of loaded?.library.highlights ?? []) m.set(h.documentId, (m.get(h.documentId) ?? 0) + 1);
+    return m;
+  }, [loaded]);
+
+  const openLocal = async (p: LocalPdf) => {
+    const opened = await local.open(p.uri, p.name);
+    if (opened) push({ kind: "local", pdf: opened });
+  };
+  const pickLocal = async () => {
+    const opened = await local.pick();
+    if (opened) push({ kind: "local", pdf: opened });
+  };
+  const openNote = (id: string) => {
+    const it = items.find((x) => x.highlight.id === id);
+    if (it) push({ kind: "detail", item: it });
+  };
+  const localList = (
+    <LocalPdfList
+      list={local.list}
+      highlightCounts={highlightCounts}
+      onPick={() => void pickLocal()}
+      onOpen={(p) => void openLocal(p)}
+      onRemove={(p) => local.remove(p.uri)}
+    />
+  );
 
   // 원문을 볼 수 있는지: 번들에 PDF 가 있고 폴더가 연결돼 있어야 한다.
   const originalFor = (documentId: string, focusId?: string, needRects = false): Original => {
@@ -45,21 +79,35 @@ export default function ViewerApp() {
   };
 
   const top = stack[stack.length - 1];
+  if (top?.kind === "local") {
+    const p = top.pdf;
+    return (
+      <Suspense fallback={<div className="viewer-empty">PDF 불러오는 중…</div>}>
+        <PdfScreen
+          pdfKey={p.uri}
+          load={() => local.load(p.uri)}
+          title={p.name}
+          highlights={loaded?.library.highlights.filter((h) => h.documentId === p.documentId) ?? []}
+          onBack={() => history.back()}
+          onOpenNote={openNote}
+        />
+      </Suspense>
+    );
+  }
   if (top && loaded) {
     if (top.kind === "pdf") {
       const doc = loaded.library.documents.find((d) => d.id === top.documentId);
       return (
         <Suspense fallback={<div className="viewer-empty">원문 불러오는 중…</div>}>
           <PdfScreen
-            document={doc!}
+            pdfKey={top.documentId}
+            load={() =>
+              loadDocumentPdf(top.documentId, doc?.pdf ? loaded.pdfUris.get(doc.pdf.split("/").pop()!) : undefined)
+            }
             highlights={loaded.library.highlights.filter((h) => h.documentId === top.documentId)}
             focusId={top.focusId}
-            pdfUri={doc?.pdf ? loaded.pdfUris.get(doc.pdf.split("/").pop()!) : undefined}
             onBack={() => history.back()}
-            onOpenNote={(id) => {
-              const it = items.find((x) => x.highlight.id === id);
-              if (it) push({ kind: "detail", item: it });
-            }}
+            onOpenNote={openNote}
           />
         </Suspense>
       );
@@ -98,20 +146,24 @@ export default function ViewerApp() {
         </button>
       </header>
       {message && <div className="viewer-message">{message}</div>}
+      {local.message && <div className="viewer-message">{local.message}</div>}
       {notice && <div className="viewer-notice">{notice}</div>}
       {!loaded ? (
-        <div className="viewer-empty">
-          <p>맥에서 번들을 내보낸 Google Drive 의 PaperBoard 폴더를 연결하세요.</p>
-          <button onClick={() => void connectFolder()} disabled={busy}>
-            PaperBoard 폴더 연결
-          </button>
-          <p className="viewer-hint">
-            폴더를 연결하면 PDF 원문도 볼 수 있습니다.{" "}
-            <button className="link" onClick={() => void pickFile()}>
-              번들 파일만 선택
+        <>
+          <div className="viewer-empty">
+            <p>맥에서 번들을 내보낸 Google Drive 의 PaperBoard 폴더를 연결하세요.</p>
+            <button onClick={() => void connectFolder()} disabled={busy}>
+              PaperBoard 폴더 연결
             </button>
-          </p>
-        </div>
+            <p className="viewer-hint">
+              폴더를 연결하면 PDF 원문도 볼 수 있습니다.{" "}
+              <button className="link" onClick={() => void pickFile()}>
+                번들 파일만 선택
+              </button>
+            </p>
+          </div>
+          {localList}
+        </>
       ) : (
         <>
           <nav className="viewer-tabs">
@@ -121,8 +173,13 @@ export default function ViewerApp() {
             <button className={tab === "papers" ? "active" : ""} onClick={() => setTab("papers")}>
               논문 {papers.length}
             </button>
+            <button className={tab === "local" ? "active" : ""} onClick={() => setTab("local")}>
+              PDF 파일
+            </button>
           </nav>
-          {tab === "papers" ? (
+          {tab === "local" ? (
+            localList
+          ) : tab === "papers" ? (
             <ul className="vocab-list">
               {papers.map((p) => (
                 <li key={p.document.id}>
