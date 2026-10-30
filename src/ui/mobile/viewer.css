@@ -67,6 +67,10 @@ button.link {
 
 .viewer-read {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   text-align: right;
   color: var(--muted);
   font-size: 13px;
@@ -287,4 +291,40 @@ button.link {
   margin: 0 0 4px;
   font-size: 18px;
   line-height: 1.4;
+}
+
+/* ---- 기기의 PDF(PDF 리더) ---- */
+
+.local-pdfs {
+  padding: 8px 0;
+}
+
+.local-pdfs-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.local-pdfs-head strong {
+  flex: 1;
+}
+
+.local-pdf-row {
+  display: flex;
+  align-items: center;
+}
+
+.local-pdf-row > button:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.local-pdf-row > button.link {
+  /* .vocab-list button 의 width: 100% 를 덮어써서 ✕ 는 글자 폭만 차지하게 한다 */
+  display: block;
+  flex: none;
+  width: auto;
+  padding: 0 4px 0 16px;
+  color: var(--muted);
 }

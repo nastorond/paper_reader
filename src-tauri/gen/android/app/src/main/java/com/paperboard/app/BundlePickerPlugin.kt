@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.provider.OpenableColumns
 import androidx.activity.result.ActivityResult
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
@@ -55,8 +56,9 @@ class BundlePickerPlugin(private val activity: Activity) : Plugin(activity) {
             false
         }
         // 예전에 고른 번들의 권한은 정리한다(앱이 붙잡을 수 있는 영구 권한 수에 한도가 있다).
+        // 기기 PDF(최근 파일 목록)의 권한은 남긴다. 그 목록은 프론트엔드가 releaseUri 로 정리한다.
         for (p in resolver.persistedUriPermissions) {
-            if (p.uri != uri) {
+            if (p.uri != uri && !isPdf(p.uri)) {
                 try {
                     resolver.releasePersistableUriPermission(p.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 } catch (_: SecurityException) {
@@ -66,6 +68,67 @@ class BundlePickerPlugin(private val activity: Activity) : Plugin(activity) {
         ret.put("uri", uri.toString())
         ret.put("persisted", persisted)
         invoke.resolve(ret)
+    }
+
+    private fun isPdf(uri: Uri): Boolean =
+        try {
+            activity.contentResolver.getType(uri) == "application/pdf"
+        } catch (_: Exception) {
+            false
+        }
+
+    // ---- 기기의 PDF 파일 열기(PDF 리더): 영구 읽기 권한 + 파일 이름 ----
+
+    @Command
+    fun pickPdf(invoke: Invoke) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/pdf"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
+        startActivityForResult(invoke, intent, "pdfResult")
+    }
+
+    @ActivityCallback
+    fun pdfResult(invoke: Invoke, result: ActivityResult) {
+        val uri = result.data?.data
+        val ret = JSObject()
+        if (result.resultCode != Activity.RESULT_OK || uri == null) {
+            ret.put("uri", JSONObject.NULL)
+            ret.put("persisted", false)
+            ret.put("name", JSONObject.NULL)
+            invoke.resolve(ret)
+            return
+        }
+        val resolver = activity.contentResolver
+        val persisted = try {
+            resolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        } catch (e: SecurityException) {
+            false
+        }
+        val name = try {
+            resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+                if (c.moveToFirst() && !c.isNull(0)) c.getString(0) else null
+            }
+        } catch (_: Exception) {
+            null
+        }
+        ret.put("uri", uri.toString())
+        ret.put("persisted", persisted)
+        ret.put("name", name ?: JSONObject.NULL)
+        invoke.resolve(ret)
+    }
+
+    // 영구 읽기 권한 해제(최근 파일 목록에서 지우거나 밀려난 PDF). 이미 없으면 무시한다.
+    @Command
+    fun releaseUri(invoke: Invoke) {
+        val uri = Uri.parse(invoke.getArgs().getString("uri"))
+        try {
+            activity.contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (_: SecurityException) {
+        }
+        invoke.resolve()
     }
 
     // ---- 폴더(PaperBoard) 단위 접근: 번들 zip 과 pdfs/ 안의 PDF 를 한 번의 선택으로 읽기 ----

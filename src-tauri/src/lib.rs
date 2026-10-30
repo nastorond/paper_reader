@@ -130,6 +130,54 @@ async fn list_folder(app: tauri::AppHandle, tree_uri: String, document_id: Optio
     }
 }
 
+// Android 뷰어(PDF 리더): 기기의 PDF 파일 고르기(영구 읽기 권한 + 파일 이름). Kotlin 의 pickPdf.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct PickedPdf {
+    uri: Option<String>,
+    persisted: bool,
+    name: Option<String>,
+}
+
+#[tauri::command]
+async fn pick_pdf(app: tauri::AppHandle) -> Result<PickedPdf, String> {
+    #[cfg(target_os = "android")]
+    {
+        let picker = app.state::<BundlePicker>();
+        picker.0.run_mobile_plugin_async::<PickedPdf>("pickPdf", ()).await.map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = app;
+        Err("pick_pdf 는 Android 전용입니다".into())
+    }
+}
+
+#[derive(serde::Serialize)]
+struct UriArgs {
+    uri: String,
+}
+
+// Android 뷰어: 고른 파일의 영구 읽기 권한 해제. Kotlin 의 releaseUri.
+#[tauri::command]
+async fn release_uri(app: tauri::AppHandle, uri: String) -> Result<(), String> {
+    #[cfg(target_os = "android")]
+    {
+        let picker = app.state::<BundlePicker>();
+        // Kotlin 은 빈 객체로 응답하므로, 내용은 보지 않고 JSON 값 그대로 받는다.
+        picker
+            .0
+            .run_mobile_plugin_async::<serde_json::Value>("releaseUri", UriArgs { uri })
+            .await
+            .map(|_| ())
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = (app, UriArgs { uri });
+        Err("release_uri 는 Android 전용입니다".into())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 플러그인 등록 + DB 경로 명령. 파일 열기·읽기·SQL 실행은 프론트엔드(TS)에서
@@ -147,7 +195,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init());
     builder
-        .invoke_handler(tauri::generate_handler![db_path, pick_bundle, pick_folder, list_folder])
+        .invoke_handler(tauri::generate_handler![db_path, pick_bundle, pick_folder, list_folder, pick_pdf, release_uri])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
