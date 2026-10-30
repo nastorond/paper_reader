@@ -6,6 +6,7 @@ import { loadDocumentPdf } from "../../services/viewer/pdfSource";
 import { useBundleSource } from "../hooks/useBundleSource";
 import { useLocalPdfs } from "../hooks/useLocalPdfs";
 import { LocalPdfList } from "./LocalPdfList";
+import { NoteContent } from "./NoteContent";
 import "./viewer.css";
 
 // 원문 보기는 pdf.js 를 쓰므로 필요할 때만 불러온다.
@@ -76,6 +77,11 @@ export default function ViewerApp() {
     const it = items.find((x) => x.highlight.id === id);
     if (it) push({ kind: "detail", item: it });
   };
+  // 원문 옆 노트 패널(넓은 화면)에 보일 노트
+  const renderNote = (id: string) => {
+    const it = items.find((x) => x.highlight.id === id);
+    return it && loaded ? <NoteContent item={it} boards={loaded.boards} /> : null;
+  };
   const localList = (
     <LocalPdfList
       list={local.list}
@@ -115,6 +121,7 @@ export default function ViewerApp() {
             highlights={loaded?.library.highlights.filter((h) => h.documentId === p.documentId) ?? []}
             onBack={() => history.back()}
             onOpenNote={openNote}
+            renderNote={renderNote}
           />
         </Suspense>
       );
@@ -134,6 +141,7 @@ export default function ViewerApp() {
               focusNonce={v.focusNonce}
               onBack={() => history.back()}
               onOpenNote={openNote}
+              renderNote={renderNote}
             />
           </Suspense>
         );
@@ -289,11 +297,6 @@ function Detail({
   original: Original;
   onBack(): void;
 }) {
-  const h = item.highlight;
-  const svg = h.boardSvg ? boards.get(h.boardSvg) : undefined;
-  // SVG 는 <img> 로 넣어 스크립트가 실행되지 않게 한다.
-  const svgUrl = useMemo(() => (svg ? URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })) : null), [svg]);
-  useEffect(() => () => void (svgUrl && URL.revokeObjectURL(svgUrl)), [svgUrl]);
   return (
     <div className="viewer">
       <header className="viewer-bar">
@@ -301,11 +304,7 @@ function Detail({
         <span className="viewer-read" />
         {original.kind === "ok" && <button onClick={original.open}>원문 보기</button>}
       </header>
-      <article className="vocab-detail">
-        <blockquote style={{ borderLeftColor: h.color }}>{h.text}</blockquote>
-        <p className="vocab-meta">
-          {item.documentTitle} · p.{h.pageIndex + 1}
-        </p>
+      <NoteContent item={item} boards={boards}>
         {original.kind === "need-folder" && (
           <p className="viewer-hint">
             원문을 보려면{" "}
@@ -315,14 +314,7 @@ function Detail({
             하세요.
           </p>
         )}
-        {h.note ? (
-          // 노트 HTML 은 맥 앱이 만든 것(tiptapToHtml: 글자 이스케이프, 위험한 링크 제거)
-          <div className="vocab-note-html" dangerouslySetInnerHTML={{ __html: h.note.html }} />
-        ) : (
-          <p className="viewer-hint">노트 없음</p>
-        )}
-        {svgUrl && <img className="vocab-board" src={svgUrl} alt="보드" />}
-      </article>
+      </NoteContent>
     </div>
   );
 }

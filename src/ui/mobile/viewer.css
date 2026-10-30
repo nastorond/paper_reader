@@ -263,6 +263,37 @@ button.link {
 .pdf-screen-body {
   flex: 1;
   min-height: 0;
+  display: flex;
+}
+
+/* 원문(왼쪽). 노트 패널이 꺼져 있으면 화면 전체 */
+.pdf-screen-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-screen-main > .pdf-scroll {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+/* 원문 옆 노트 패널(넓은 화면에서 [노트 패널] 버튼으로 켬) */
+.note-panel {
+  flex: none;
+  width: min(42%, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+}
+
+.viewer-bar button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* 폰 화면에서는 페이지 좌우 여백을 줄인다 */

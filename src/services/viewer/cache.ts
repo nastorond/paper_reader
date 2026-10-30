@@ -92,3 +92,18 @@ export function saveSource(src: BundleSource): void {
     /* 저장 실패는 무시: 다음에 다시 고르면 된다 */
   }
 }
+
+// 원문 옆 노트 패널을 켜 두었는지(기기마다 기억)
+const NOTE_PANEL_KEY = "paperboard.notePanel";
+
+export function savedNotePanel(): boolean {
+  return storage()?.getItem(NOTE_PANEL_KEY) === "1";
+}
+
+export function saveNotePanel(open: boolean): void {
+  try {
+    storage()?.setItem(NOTE_PANEL_KEY, open ? "1" : "0");
+  } catch {
+    /* 저장 실패는 무시: 다음에 다시 켜면 된다 */
+  }
+}
