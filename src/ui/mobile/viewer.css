@@ -294,13 +294,14 @@ button.link {
    반투명한 동그란 손잡이가 꺼짐(왼쪽)·켜짐(오른쪽)으로 미끄러진다. */
 .panel-switch {
   position: relative;
-  height: 32px;
-  min-width: 112px;
-  padding: 0 16px;
+  width: 84px;
+  height: 28px;
+  padding: 0;
   border-radius: 999px;
   background: var(--panel);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
   transition:
     background 0.2s,
     border-color 0.2s,
@@ -317,24 +318,25 @@ button.link {
   position: relative; /* 손잡이 아래에 깔리되 비쳐 보이게 */
 }
 
+/* 손잡이는 글씨 위에 겹치므로 반투명으로 */
 .panel-switch-knob {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 24px;
-  height: 24px;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(113, 113, 122, 0.35);
+  background: rgba(113, 113, 122, 0.3);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition:
-    left 0.2s,
+    left 0.2s ease,
     background 0.2s;
   pointer-events: none;
 }
 
 .panel-switch.on .panel-switch-knob {
-  left: calc(100% - 27px); /* 오른쪽 끝(손잡이 24px + 여백 3px) */
-  background: rgba(255, 255, 255, 0.45);
+  left: calc(100% - 24px); /* 오른쪽 끝(손잡이 22px + 여백 2px) */
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* 폰 화면에서는 페이지 좌우 여백을 줄인다 */
