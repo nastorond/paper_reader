@@ -9,8 +9,6 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 
 // 노트 패널을 옆에 띄울 만큼 넓은 화면(태블릿, 펼친 Fold). CSS px 기준
 const WIDE_SCREEN = "(min-width: 700px)";
-// 노트 패널 스위치 손잡이가 움직이는 시간(viewer.css 의 .panel-switch-knob transition 과 같게)
-const SWITCH_MS = 200;
 
 interface Props {
   pdfKey: string; // 어떤 PDF 인지(바뀌면 다시 읽는다). 번들 문서 id 또는 기기 파일 주소
@@ -47,11 +45,6 @@ export default function PdfScreen({
   const mainRef = useRef<HTMLDivElement>(null);
   const wide = useMediaQuery(WIDE_SCREEN);
   const [panelOpen, setPanelOpen] = useState(savedNotePanel);
-  // 스위치 손잡이 위치. 패널은 손잡이가 다 움직인 뒤에 열고 닫는다(원문을 다시 맞추는 무거운 작업이
-  // 애니메이션과 겹치면 손잡이가 움직이는 게 보이지 않는다).
-  const [switchOn, setSwitchOn] = useState(panelOpen);
-  const switchTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(switchTimer.current), []);
   const [selectedId, setSelectedId] = useState<string | null>(focusId ?? null);
   // load 는 렌더마다 새로 만들어지므로 ref 로 읽는다(pdfKey 가 바뀔 때만 다시 읽기).
   const loadRef = useRef(load);
@@ -106,11 +99,10 @@ export default function PdfScreen({
   const canSplit = wide && !!renderNote && hls.length > 0;
   const split = canSplit && panelOpen;
   const togglePanel = () => {
-    const next = !switchOn;
-    setSwitchOn(next);
-    saveNotePanel(next);
-    window.clearTimeout(switchTimer.current);
-    switchTimer.current = window.setTimeout(() => setPanelOpen(next), SWITCH_MS);
+    setPanelOpen((v) => {
+      saveNotePanel(!v);
+      return !v;
+    });
   };
   // 패널을 켜고 끄면 원문 폭이 바뀌므로 너비에 맞춰 배율을 다시 잡는다.
   const splitRef = useRef(split);
@@ -148,13 +140,18 @@ export default function PdfScreen({
         </span>
         {canSplit && (
           // 둥근 스위치: 손잡이가 왼쪽(꺼짐)·오른쪽(켜짐)으로 움직인다. 손잡이는 반투명이라 글씨가 비친다.
+          // 애니메이션은 transform·opacity 만 써서 원문을 다시 그리는 동안에도 멈추지 않는다(viewer.css).
           <button
-            className={switchOn ? "panel-switch on" : "panel-switch"}
+            className={panelOpen ? "panel-switch on" : "panel-switch"}
             role="switch"
-            aria-checked={switchOn}
+            aria-checked={panelOpen}
             onClick={togglePanel}
           >
             <span className="panel-switch-label">노트 패널</span>
+            {/* 켜짐 바탕(파란색 + 흰 글씨). 투명도로만 나타나게 해서 글씨 색이 한순간에 바뀌지 않는다 */}
+            <span className="panel-switch-fill" aria-hidden>
+              노트 패널
+            </span>
             <span className="panel-switch-knob" aria-hidden />
           </button>
         )}
