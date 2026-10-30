@@ -78,65 +78,68 @@ export default function ViewerApp() {
     return { kind: "ok", open: () => push({ kind: "pdf", documentId, focusId }) };
   };
 
-  const top = stack[stack.length - 1];
-  if (top?.kind === "local") {
-    const p = top.pdf;
-    return (
-      <Suspense fallback={<div className="viewer-empty">PDF 불러오는 중…</div>}>
-        <PdfScreen
-          pdfKey={p.uri}
-          load={() => local.load(p.uri)}
-          title={p.name}
-          highlights={loaded?.library.highlights.filter((h) => h.documentId === p.documentId) ?? []}
-          onBack={() => history.back()}
-          onOpenNote={openNote}
-        />
-      </Suspense>
-    );
-  }
-  if (top && loaded) {
-    if (top.kind === "pdf") {
-      const doc = loaded.library.documents.find((d) => d.id === top.documentId);
+  // 쌓인 화면 하나를 그린다. 번들 화면(논문·상세·원문)은 번들이 있을 때만.
+  const renderView = (v: View) => {
+    if (v.kind === "local") {
+      const p = v.pdf;
       return (
-        <Suspense fallback={<div className="viewer-empty">원문 불러오는 중…</div>}>
+        <Suspense fallback={<div className="viewer-empty">PDF 불러오는 중…</div>}>
           <PdfScreen
-            pdfKey={top.documentId}
-            load={() =>
-              loadDocumentPdf(top.documentId, doc?.pdf ? loaded.pdfUris.get(doc.pdf.split("/").pop()!) : undefined)
-            }
-            highlights={loaded.library.highlights.filter((h) => h.documentId === top.documentId)}
-            focusId={top.focusId}
+            pdfKey={p.uri}
+            load={() => local.load(p.uri)}
+            title={p.name}
+            highlights={loaded?.library.highlights.filter((h) => h.documentId === p.documentId) ?? []}
             onBack={() => history.back()}
             onOpenNote={openNote}
           />
         </Suspense>
       );
     }
-    if (top.kind === "paper") {
-      const summary = papers.find((p) => p.document.id === top.documentId);
+    if (loaded) {
+      if (v.kind === "pdf") {
+        const doc = loaded.library.documents.find((d) => d.id === v.documentId);
+        return (
+          <Suspense fallback={<div className="viewer-empty">원문 불러오는 중…</div>}>
+            <PdfScreen
+              pdfKey={v.documentId}
+              load={() =>
+                loadDocumentPdf(v.documentId, doc?.pdf ? loaded.pdfUris.get(doc.pdf.split("/").pop()!) : undefined)
+              }
+              highlights={loaded.library.highlights.filter((h) => h.documentId === v.documentId)}
+              focusId={v.focusId}
+              onBack={() => history.back()}
+              onOpenNote={openNote}
+            />
+          </Suspense>
+        );
+      }
+      if (v.kind === "paper") {
+        const summary = papers.find((p) => p.document.id === v.documentId);
+        return (
+          <PaperScreen
+            title={summary?.document.title ?? ""}
+            fileName={summary?.document.fileName ?? ""}
+            items={paperItems(items, v.documentId)}
+            original={originalFor(v.documentId)}
+            onOpen={(it) => push({ kind: "detail", item: it })}
+            onBack={() => history.back()}
+          />
+        );
+      }
+      const h = v.item.highlight;
       return (
-        <PaperScreen
-          title={summary?.document.title ?? ""}
-          fileName={summary?.document.fileName ?? ""}
-          items={paperItems(items, top.documentId)}
-          original={originalFor(top.documentId)}
-          onOpen={(it) => push({ kind: "detail", item: it })}
+        <Detail
+          item={v.item}
+          boards={loaded.boards}
+          original={originalFor(h.documentId, h.id, !h.rects)}
           onBack={() => history.back()}
         />
       );
     }
-    const h = top.item.highlight;
-    return (
-      <Detail
-        item={top.item}
-        boards={loaded.boards}
-        original={originalFor(h.documentId, h.id, !h.rects)}
-        onBack={() => history.back()}
-      />
-    );
-  }
+    return null;
+  };
 
-  return (
+  const home = (
     <div className="viewer">
       <header className="viewer-bar">
         <strong>PaperBoard 단어장</strong>
@@ -232,6 +235,19 @@ export default function ViewerApp() {
         </>
       )}
     </div>
+  );
+
+  // 모든 화면을 겹쳐 두고 맨 위 화면만 보인다. 아래 화면은 언마운트하지 않고 숨겨서(visibility)
+  // 뒤로 왔을 때 PDF·확대율·스크롤 위치가 그대로 남는다(#7). 각 화면이 자기 스크롤을 갖는다.
+  const layers = [home, ...stack.map(renderView)];
+  return (
+    <>
+      {layers.map((el, i) => (
+        <div key={i} className={i === layers.length - 1 ? "viewer-layer" : "viewer-layer behind"} aria-hidden={i !== layers.length - 1}>
+          {el}
+        </div>
+      ))}
+    </>
   );
 }
 
