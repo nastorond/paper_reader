@@ -48,6 +48,19 @@ button.link {
   padding: 0;
 }
 
+/* 화면 쌓기(ViewerApp): 화면마다 자기 스크롤을 갖고, 아래 화면은 숨기기만 한다(상태·스크롤 유지) */
+.viewer-layer {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.viewer-layer.behind {
+  /* display: none 이 아니라 visibility 로 숨겨서 크기·스크롤 위치가 그대로 남게 한다 */
+  visibility: hidden;
+}
+
 .viewer {
   min-height: 100vh;
   padding-bottom: env(safe-area-inset-bottom);
