@@ -77,6 +77,13 @@ export default function ViewerApp() {
     const it = items.find((x) => x.highlight.id === id);
     if (it) push({ kind: "detail", item: it });
   };
+  // 문서 탭에서 문서를 누르면: 원문을 볼 수 있으면 원문을 바로 열고, 아니면 하이라이트 목록(폴더 연결 안내 포함).
+  const openPaper = (documentId: string) => {
+    const original = originalFor(documentId);
+    if (original.kind === "ok") original.open();
+    else push({ kind: "paper", documentId });
+  };
+
   // 원문 옆 노트 패널(넓은 화면)에 보일 노트
   const renderNote = (id: string) => {
     const it = items.find((x) => x.highlight.id === id);
@@ -207,7 +214,7 @@ export default function ViewerApp() {
               단어장 {items.length}
             </button>
             <button className={tab === "papers" ? "active" : ""} onClick={() => setTab("papers")}>
-              논문 {papers.length}
+              문서 {papers.length}
             </button>
             <button className={tab === "local" ? "active" : ""} onClick={() => setTab("local")}>
               PDF 파일
@@ -219,7 +226,7 @@ export default function ViewerApp() {
             <ul className="vocab-list">
               {papers.map((p) => (
                 <li key={p.document.id}>
-                  <button className="paper-item" onClick={() => push({ kind: "paper", documentId: p.document.id })}>
+                  <button className="paper-item" onClick={() => openPaper(p.document.id)}>
                     <span className="vocab-text">{p.document.title}</span>
                     <span className="vocab-meta">
                       하이라이트 {p.highlightCount} · {fmtDate(p.document.lastOpenedAt)}

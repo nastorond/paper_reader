@@ -6,7 +6,7 @@ export async function loadDocumentPdf(documentId: string, driveUri: string | und
   const cached = await loadCachedPdf(documentId).catch(() => null);
   if (cached) return cached;
   if (!driveUri) {
-    throw new Error('폴더에 이 논문의 PDF 가 없습니다. 맥에서 "PDF 원문도 함께 올리기"를 켜고 내보내 주세요.');
+    throw new Error('폴더에 이 문서의 PDF 가 없습니다. 맥에서 "PDF 원문도 함께 올리기"를 켜고 내보내 주세요.');
   }
   const data = await readFile(driveUri);
   await saveCachedPdf(documentId, data);
