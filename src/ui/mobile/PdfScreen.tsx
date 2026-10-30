@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PdfViewer } from "../pdf/PdfViewer";
+import { PdfViewer, type PdfViewerHandle } from "../pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "../../services/pdf/pdfjs";
 import { fitWidthScale, zoomIn, zoomOut } from "../../logic/pdf/zoom";
 import type { BundleHighlight } from "../../logic/bundle/schema";
@@ -11,13 +11,14 @@ interface Props {
   title?: string; // 위쪽 막대에 보일 이름(기기 파일)
   highlights: BundleHighlight[]; // 이 문서의 하이라이트(없으면 빈 배열)
   focusId?: string; // 처음 보여줄 하이라이트(없으면 첫 페이지)
+  focusNonce?: number; // 바뀌면(이미 열린 원문으로 돌아올 때) focusId 위치로 다시 이동
   onBack(): void;
   onOpenNote(highlightId: string): void;
 }
 
 // 폰 "원문 보기": 맥과 같은 PDF 뷰어(캔버스 + 텍스트 레이어 + 하이라이트 레이어)를 읽기 전용으로 쓴다.
 // 번들 원문과 기기의 PDF 파일(PDF 리더)을 같은 화면으로 연다. 하이라이트를 누르면 그 노트로 간다.
-export default function PdfScreen({ pdfKey, load, title, highlights, focusId, onBack, onOpenNote }: Props) {
+export default function PdfScreen({ pdfKey, load, title, highlights, focusId, focusNonce, onBack, onOpenNote }: Props) {
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number | null>(null);
@@ -69,6 +70,16 @@ export default function PdfScreen({ pdfKey, load, title, highlights, focusId, on
     [highlights],
   );
 
+  // 이미 열린 원문으로 돌아올 때(focusNonce 가 바뀜) 새 하이라이트로 이동한다.
+  // 처음 열 때의 이동은 PdfViewer 의 focusHighlightId 가 한다.
+  const viewerRef = useRef<PdfViewerHandle>(null);
+  useEffect(() => {
+    if (focusNonce === undefined) return;
+    const h = hls.find((x) => x.id === focusId);
+    if (h) viewerRef.current?.scrollToHighlight(h);
+    // hls 가 바뀔 때(번들 새로고침)는 다시 이동하지 않는다
+  }, [focusNonce]);
+
   return (
     <div className="pdf-screen">
       <header className="viewer-bar">
@@ -89,6 +100,7 @@ export default function PdfScreen({ pdfKey, load, title, highlights, focusId, on
           <div className="viewer-message">{error}</div>
         ) : pdf && scale ? (
           <PdfViewer
+            ref={viewerRef}
             doc={pdf}
             scale={scale}
             onPageChange={setPage}

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "katex/dist/katex.min.css";
 import { filterVocab, paperItems, paperSummaries, vocabItems, type VocabItem } from "../../logic/viewer/vocab";
 import type { LocalPdf } from "../../logic/viewer/localPdfs";
@@ -16,7 +16,7 @@ const PdfScreen = lazy(() => import("./PdfScreen"));
 type View =
   | { kind: "paper"; documentId: string }
   | { kind: "detail"; item: VocabItem }
-  | { kind: "pdf"; documentId: string; focusId?: string }
+  | { kind: "pdf"; documentId: string; focusId?: string; focusNonce?: number }
   | { kind: "local"; pdf: LocalPdf };
 
 // Android 뷰어(읽기 전용 단어장 + PDF 리더) 화면. 번들 읽기·새로고침은 useBundleSource, 기기 PDF 는 useLocalPdfs 에 있다.
@@ -28,16 +28,32 @@ export default function ViewerApp() {
   const [stack, setStack] = useState<View[]>([]);
   const [tab, setTab] = useState<"vocab" | "papers" | "local">("vocab");
 
-  // 화면 쌓기 + Android 뒤로 가기
+  // 화면 쌓기 + Android 뒤로 가기. 히스토리 항목마다 스택 깊이를 넣어 두어, 여러 단계를
+  // 한 번에 돌아가도(history.go(-n)) popstate 한 번으로 그 깊이에 맞춘다.
+  const stackRef = useRef(stack);
+  stackRef.current = stack;
   const push = useCallback((v: View) => {
-    history.pushState({ depth: 1 }, "");
+    history.pushState({ depth: stackRef.current.length + 1 }, "");
     setStack((s) => [...s, v]);
   }, []);
   useEffect(() => {
-    const onPop = () => setStack((s) => s.slice(0, -1));
+    const onPop = (e: PopStateEvent) => {
+      const depth = (e.state as { depth?: number } | null)?.depth ?? 0;
+      setStack((s) => s.slice(0, depth));
+    };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
+
+  // 원문 보기: 같은 논문의 원문 화면이 이미 쌓여 있으면 새로 쌓지 않고 그 화면으로 돌아가
+  // 새 하이라이트로 이동한다. 없으면 새로 쌓는다.
+  const openOriginal = (documentId: string, focusId?: string) => {
+    const s = stackRef.current;
+    const i = s.findIndex((v) => v.kind === "pdf" && v.documentId === documentId);
+    if (i < 0) return push({ kind: "pdf", documentId, focusId });
+    setStack((prev) => prev.map((v, j) => (j === i && v.kind === "pdf" ? { ...v, focusId, focusNonce: Date.now() } : v)));
+    history.go(-(s.length - 1 - i));
+  };
 
   const items = useMemo(() => (loaded ? vocabItems(loaded.library) : []), [loaded]);
   const visible = useMemo(() => filterVocab(items, docFilter, query), [items, docFilter, query]);
@@ -75,11 +91,19 @@ export default function ViewerApp() {
     const doc = loaded?.library.documents.find((d) => d.id === documentId);
     if (!doc?.pdf || needRects) return { kind: "none" };
     if (source?.kind !== "folder") return { kind: "need-folder", connect: () => void connectFolder() };
-    return { kind: "ok", open: () => push({ kind: "pdf", documentId, focusId }) };
+    return { kind: "ok", open: () => openOriginal(documentId, focusId) };
   };
 
+  // 원문 화면(PDF)은 메모리를 많이 써서, 스택에서 가장 위에 있는 하나만 살려 둔다.
+  // 그보다 아래의 다른 원문은 닫아 두었다가(빈 화면) 뒤로 가서 다시 맨 위 원문이 되면 새로 연다.
+  let livePdf = -1;
+  stack.forEach((v, i) => {
+    if (v.kind === "pdf" || v.kind === "local") livePdf = i;
+  });
+
   // 쌓인 화면 하나를 그린다. 번들 화면(논문·상세·원문)은 번들이 있을 때만.
-  const renderView = (v: View) => {
+  const renderView = (v: View, i: number) => {
+    if ((v.kind === "pdf" || v.kind === "local") && i !== livePdf) return null;
     if (v.kind === "local") {
       const p = v.pdf;
       return (
@@ -107,6 +131,7 @@ export default function ViewerApp() {
               }
               highlights={loaded.library.highlights.filter((h) => h.documentId === v.documentId)}
               focusId={v.focusId}
+              focusNonce={v.focusNonce}
               onBack={() => history.back()}
               onOpenNote={openNote}
             />
@@ -239,7 +264,7 @@ export default function ViewerApp() {
 
   // 모든 화면을 겹쳐 두고 맨 위 화면만 보인다. 아래 화면은 언마운트하지 않고 숨겨서(visibility)
   // 뒤로 왔을 때 PDF·확대율·스크롤 위치가 그대로 남는다(#7). 각 화면이 자기 스크롤을 갖는다.
-  const layers = [home, ...stack.map(renderView)];
+  const layers = [home, ...stack.map((v, i) => renderView(v, i))];
   return (
     <>
       {layers.map((el, i) => (
