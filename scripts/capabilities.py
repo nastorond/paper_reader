@@ -66,7 +66,25 @@ desktop = {
     "permissions": ["updater:default", "process:allow-restart", "core:window:allow-destroy"],
 }
 
+# iPad 시험판: 사용자가 파일 선택 창에서 고른 폴더(Drive 등)의 주소가 미리 정해져 있지 않아 경로를 넓게 연다.
+ANY = [{"path": "**"}]
+ios = {
+    "identifier": "ios",
+    "description": "iPad 시험판 권한 (scripts/capabilities.py 가 생성 — 직접 고치지 말 것)",
+    "windows": ["main"],
+    "platforms": ["iOS"],
+    "permissions": [
+        "fs:allow-start-accessing-security-scoped-resource",
+        "fs:allow-stop-accessing-security-scoped-resource",
+        {"identifier": "fs:allow-read-dir", "allow": ANY},
+        {"identifier": "fs:allow-read-file", "allow": ANY},
+        {"identifier": "fs:allow-read-text-file", "allow": ANY},
+        {"identifier": "fs:allow-write-text-file", "allow": ANY},
+        {"identifier": "fs:allow-remove", "allow": ANY},
+    ],
+}
+
 caps = Path(__file__).resolve().parent.parent / "src-tauri/capabilities"
-for name, cap in [("default.json", capability), ("desktop.json", desktop)]:
+for name, cap in [("default.json", capability), ("desktop.json", desktop), ("ios.json", ios)]:
     (caps / name).write_text(json.dumps(cap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"wrote {caps} ({sum(len(p['allow']) for p in capability['permissions'] if isinstance(p, dict))} path patterns)")

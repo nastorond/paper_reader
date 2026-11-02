@@ -1,4 +1,7 @@
+import { useState } from "react";
 import type { LocalPdf } from "../../logic/viewer/localPdfs";
+import { isIOS } from "../../services/platform";
+import { probeDriveFolder } from "../../services/viewer/driveProbe";
 
 // 기기의 PDF(PDF 리더): "PDF 파일 열기" 버튼과 최근 연 파일 목록.
 // highlightCounts: 번들 문서 id → 하이라이트 수(PC 에서 노트를 단 논문이면 표시)
@@ -15,6 +18,7 @@ export function LocalPdfList({
   onOpen(p: LocalPdf): void;
   onRemove(p: LocalPdf): void;
 }) {
+  const [probe, setProbe] = useState<string[] | null>(null);
   return (
     <section className="local-pdfs">
       <div className="local-pdfs-head">
@@ -44,6 +48,13 @@ export function LocalPdfList({
           })}
         </ul>
       )}
+      {/* iPad 시험판: Drive 폴더 읽기·쓰기가 되는지 확인 */}
+      {isIOS && (
+        <div className="local-pdfs-head">
+          <button onClick={() => void probeDriveFolder().then(setProbe)}>Drive 폴더 시험</button>
+        </div>
+      )}
+      {probe && <pre className="drive-probe">{probe.join("\n")}</pre>}
     </section>
   );
 }
