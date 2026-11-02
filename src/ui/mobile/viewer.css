@@ -430,3 +430,16 @@ button.link {
   padding: 0 4px 0 16px;
   color: var(--muted);
 }
+
+/* 필기 시험판(iPad) */
+.ink-stats {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ink-toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}

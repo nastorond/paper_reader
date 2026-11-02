@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { displayNameOf, forgetLocalPdf, rememberLocalPdf, type LocalPdf } from "../../logic/viewer/localPdfs";
-import { pickPdfFile, readLocalPdf, releaseUri, saveLocalPdfs, savedLocalPdfs } from "../../services/viewer/localPdf";
+import { pickPdfFile, pickPdfInWebView, readLocalPdf, releaseUri, saveLocalPdfs, savedLocalPdfs } from "../../services/viewer/localPdf";
+import { sha256Hex } from "../../services/files/hash";
+import { isIOS } from "../../services/platform";
 
 // 폰·태블릿 PDF 리더: 기기의 PDF 고르기·열기와 최근 연 파일 목록.
 export function useLocalPdfs() {
@@ -40,6 +42,20 @@ export function useLocalPdfs() {
   );
 
   const pick = useCallback(async (): Promise<LocalPdf | null> => {
+    if (isIOS) {
+      // 시험판: 고른 파일을 메모리로 읽어 바로 연다. 다시 열 주소가 없어 최근 목록에는 넣지 않는다.
+      try {
+        const file = await pickPdfInWebView();
+        if (!file) return null;
+        const documentId = await sha256Hex(file.data);
+        const uri = `webview:${documentId}`;
+        lastRead.current = { uri, data: file.data };
+        return { uri, name: displayNameOf(file.name, uri), documentId, openedAt: new Date().toISOString() };
+      } catch (e) {
+        setMessage(`PDF 를 열지 못했습니다. (${e instanceof Error ? e.message : String(e)})`);
+        return null;
+      }
+    }
     const picked = await pickPdfFile();
     if (!picked.uri) return null;
     const entry = await open(picked.uri, displayNameOf(picked.name, picked.uri));

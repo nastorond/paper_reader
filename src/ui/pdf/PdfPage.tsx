@@ -13,8 +13,18 @@ import type { PDFPageProxy } from "pdfjs-dist/types/src/display/api";
 import { buildSegments, extractGlyphs, type FontLike, type TextSegment } from "../../logic/pdf/glyphLayout";
 import { renderSegmentTextLayer } from "./segmentTextLayer";
 import { HighlightLayer } from "./HighlightLayer";
+import { InkLayer } from "./InkLayer";
+import type { InkSample, InkStroke } from "../../logic/ink/ink";
 import { pdfRectToPercent, percentContains, type ViewportLike } from "../../logic/highlight/geometry";
 import type { Highlight } from "../../logic/types";
+
+// 필기(iPad 시험판). 없으면 필기 레이어를 만들지 않는다.
+export interface PageInk {
+  enabled: boolean;
+  strokes: InkStroke[];
+  onStroke(stroke: InkStroke): void;
+  onSample(sample: InkSample): void;
+}
 
 export interface PageSize {
   // scale 1 기준 크기(CSS px = PDF pt × userUnit)
@@ -35,11 +45,12 @@ interface Props {
   highlights: Highlight[];
   selectedHighlightId: string | null;
   onHighlightClick(id: string | null): void;
+  ink?: PageInk;
 }
 
 // 한 페이지 = 캔버스(그림) + 텍스트 레이어(투명 글자, 선택·검색용) 를 겹친 것.
 // 하이라이트 색 레이어는 둘 사이에 깔린다(HighlightLayer.tsx).
-export function PdfPage({ doc, index, size, scale, active, highlights, selectedHighlightId, onHighlightClick }: Props) {
+export function PdfPage({ doc, index, size, scale, active, highlights, selectedHighlightId, onHighlightClick, ink }: Props) {
   const canvasHostRef = useRef<HTMLDivElement>(null);
   const textLayerDivRef = useRef<HTMLDivElement>(null);
   const textLayerRef = useRef<TextLayer | null>(null);
@@ -163,6 +174,19 @@ export function PdfPage({ doc, index, size, scale, active, highlights, selectedH
       <div className="pdf-canvas" ref={canvasHostRef} />
       <HighlightLayer highlights={highlights} viewport={size.viewport} selectedId={selectedHighlightId} />
       <div className="textLayer" ref={textLayerDivRef} />
+      {ink && active && (
+        <InkLayer
+          pageIndex={index}
+          viewport={size.viewport}
+          scale={scale}
+          width={Math.floor(size.width * scale)}
+          height={Math.floor(size.height * scale)}
+          enabled={ink.enabled}
+          strokes={ink.strokes}
+          onStroke={ink.onStroke}
+          onSample={ink.onSample}
+        />
+      )}
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { draftFromSelection, type DraftResult } from "./fromSelection";
 import { pdfRectToPercent } from "../../logic/highlight/geometry";
 import "./pdf.css";
 import type { Highlight } from "../../logic/types";
+import { groupByPage, type InkSample, type InkStroke } from "../../logic/ink/ink";
 
 export interface PdfViewerHandle {
   scrollToPage(index: number): void;
@@ -37,10 +38,18 @@ interface Props {
   focusHighlightId?: string;
   // 두 손가락 확대로 배율을 바꾸려 할 때(부모가 scale 을 갱신한다)
   onZoom?(scale: number): void;
+  // 필기(iPad 시험판). 없으면 필기 레이어를 만들지 않는다.
+  ink?: {
+    enabled: boolean;
+    strokes: InkStroke[];
+    onStroke(stroke: InkStroke): void;
+    onSample(sample: InkSample): void;
+  };
   ref?: Ref<PdfViewerHandle>;
 }
 
 const NO_HIGHLIGHTS: Highlight[] = [];
+const NO_STROKES: InkStroke[] = [];
 
 // 모든 페이지를 세로로 이어 붙인 스크롤 뷰. 화면 근처 페이지만 실제로 렌더링한다.
 export function PdfViewer({
@@ -52,8 +61,11 @@ export function PdfViewer({
   onHighlightClick,
   focusHighlightId,
   onZoom,
+  ink,
   ref,
 }: Props) {
+  const inkStrokes = ink?.strokes;
+  const inkByPage = useMemo(() => groupByPage(inkStrokes ?? NO_STROKES), [inkStrokes]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [sizes, setSizes] = useState<PageSize[] | null>(null);
   const [active, setActive] = useState<Set<number>>(() => new Set());
@@ -226,6 +238,7 @@ export function PdfViewer({
             highlights={byPage.get(i) ?? NO_HIGHLIGHTS}
             selectedHighlightId={selectedHighlightId}
             onHighlightClick={onHighlightClick}
+            ink={ink && { ...ink, strokes: inkByPage.get(i) ?? NO_STROKES }}
           />
         ))}
       </div>

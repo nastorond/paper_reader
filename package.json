@@ -10,6 +10,7 @@
     "test": "vitest run",
     "tauri": "tauri",
     "android": ". ./scripts/android-env.sh && tauri android",
+    "ios": "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer tauri ios",
     "adb": ". ./scripts/android-env.sh && adb",
     "build:app": "sh scripts/build-app.sh"
   },

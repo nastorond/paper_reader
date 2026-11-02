@@ -10,3 +10,7 @@ export function isModKey(e: { metaKey: boolean; ctrlKey: boolean }): boolean {
 export function modLabel(key: string): string {
   return isMac ? `⌘${key}` : `Ctrl+${key}`;
 }
+
+// iPad·iPhone. iPadOS 웹뷰는 자신을 Mac 으로 알리기도 해서 터치 지원 여부를 함께 본다.
+export const isIOS =
+  /iPhone|iPad/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);

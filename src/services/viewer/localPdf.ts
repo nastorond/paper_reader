@@ -39,3 +39,22 @@ export function saveLocalPdfs(list: LocalPdf[]): void {
     /* 저장 실패는 무시: 다음에 다시 고르면 된다 */
   }
 }
+
+// iPad 시험판: 웹뷰의 파일 선택 창(파일 앱, Drive 등)으로 PDF 를 고른다. 영구 권한이 없어 목록에 남기지 않는다.
+export function pickPdfInWebView(): Promise<{ name: string; data: Uint8Array } | null> {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/pdf";
+    input.oncancel = () => resolve(null);
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return resolve(null);
+      file
+        .arrayBuffer()
+        .then((buf) => resolve({ name: file.name, data: new Uint8Array(buf) }))
+        .catch(reject);
+    };
+    input.click();
+  });
+}

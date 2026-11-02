@@ -3,6 +3,7 @@ import "katex/dist/katex.min.css";
 import { filterVocab, paperItems, paperSummaries, vocabItems, type VocabItem } from "../../logic/viewer/vocab";
 import type { LocalPdf } from "../../logic/viewer/localPdfs";
 import { loadDocumentPdf } from "../../services/viewer/pdfSource";
+import { isIOS } from "../../services/platform";
 import { useBundleSource } from "../hooks/useBundleSource";
 import { useLocalPdfs } from "../hooks/useLocalPdfs";
 import { LocalPdfList } from "./LocalPdfList";
@@ -184,27 +185,32 @@ export default function ViewerApp() {
       <header className="viewer-bar">
         <strong>PaperBoard 단어장</strong>
         <span className="viewer-read">{loaded ? `읽은 시각 ${fmt(loaded.readAt)}` : ""}</span>
-        <button onClick={() => void refresh()} disabled={busy}>
-          {busy ? "읽는 중…" : "새로고침"}
-        </button>
+        {/* iPad 시험판에는 아직 Drive 폴더 연결이 없다 */}
+        {!isIOS && (
+          <button onClick={() => void refresh()} disabled={busy}>
+            {busy ? "읽는 중…" : "새로고침"}
+          </button>
+        )}
       </header>
       {message && <div className="viewer-message">{message}</div>}
       {local.message && <div className="viewer-message">{local.message}</div>}
       {notice && <div className="viewer-notice">{notice}</div>}
       {!loaded ? (
         <>
-          <div className="viewer-empty">
-            <p>맥에서 번들을 내보낸 Google Drive 의 PaperBoard 폴더를 연결하세요.</p>
-            <button onClick={() => void connectFolder()} disabled={busy}>
-              PaperBoard 폴더 연결
-            </button>
-            <p className="viewer-hint">
-              폴더를 연결하면 PDF 원문도 볼 수 있습니다.{" "}
-              <button className="link" onClick={() => void pickFile()}>
-                번들 파일만 선택
+          {!isIOS && (
+            <div className="viewer-empty">
+              <p>맥에서 번들을 내보낸 Google Drive 의 PaperBoard 폴더를 연결하세요.</p>
+              <button onClick={() => void connectFolder()} disabled={busy}>
+                PaperBoard 폴더 연결
               </button>
-            </p>
-          </div>
+              <p className="viewer-hint">
+                폴더를 연결하면 PDF 원문도 볼 수 있습니다.{" "}
+                <button className="link" onClick={() => void pickFile()}>
+                  번들 파일만 선택
+                </button>
+              </p>
+            </div>
+          )}
           {localList}
         </>
       ) : (

@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { PdfViewer, type PdfViewerHandle } from "../pdf/PdfViewer";
 import { loadPdf, type PDFDocumentProxy } from "../../services/pdf/pdfjs";
 import { fitWidthScale, zoomIn, zoomOut } from "../../logic/pdf/zoom";
 import type { BundleHighlight } from "../../logic/bundle/schema";
 import type { Highlight } from "../../logic/types";
 import { savedNotePanel, saveNotePanel } from "../../services/viewer/cache";
+import { isIOS } from "../../services/platform";
+import { samplesPerSecond, type InkSample, type InkStroke } from "../../logic/ink/ink";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 
 // 노트 패널을 옆에 띄울 만큼 넓은 화면(태블릿, 펼친 Fold). CSS px 기준
@@ -46,6 +48,11 @@ export default function PdfScreen({
   const wide = useMediaQuery(WIDE_SCREEN);
   const [panelOpen, setPanelOpen] = useState(savedNotePanel);
   const [selectedId, setSelectedId] = useState<string | null>(focusId ?? null);
+  // 필기 시험판(iPad): 저장하지 않고 이 화면에 있는 동안만 남는다.
+  const [inkOn, setInkOn] = useState(false);
+  const [strokes, setStrokes] = useState<InkStroke[]>([]);
+  const [sample, setSample] = useState<InkSample | null>(null);
+  const onStroke = useCallback((s: InkStroke) => setStrokes((prev) => [...prev, s]), []);
   // load 는 렌더마다 새로 만들어지므로 ref 로 읽는다(pdfKey 가 바뀔 때만 다시 읽기).
   const loadRef = useRef(load);
   loadRef.current = load;
@@ -138,6 +145,23 @@ export default function PdfScreen({
           {title ? `${title} · ` : ""}
           {pdf ? `${page + 1} / ${pdf.numPages}` : ""}
         </span>
+        {isIOS && sample && (
+          <span className="ink-stats">
+            {sample.pointerType} · {samplesPerSecond(sample)}Hz · 지연 {sample.avgDelayMs.toFixed(0)}ms · 필압{" "}
+            {sample.maxPressure.toFixed(2)}
+            {sample.cancelled ? " · 취소됨" : ""}
+          </span>
+        )}
+        {isIOS && (
+          <>
+            <button disabled={strokes.length === 0} onClick={() => setStrokes((prev) => prev.slice(0, -1))}>
+              되돌리기
+            </button>
+            <button aria-pressed={inkOn} className={inkOn ? "ink-toggle on" : "ink-toggle"} onClick={() => setInkOn((v) => !v)}>
+              필기
+            </button>
+          </>
+        )}
         {canSplit && (
           // 둥근 스위치: 손잡이가 왼쪽(꺼짐)·오른쪽(켜짐)으로 움직인다. 손잡이는 반투명이라 글씨가 비친다.
           // 애니메이션은 transform·opacity 만 써서 원문을 다시 그리는 동안에도 멈추지 않는다(viewer.css).
@@ -177,6 +201,7 @@ export default function PdfScreen({
               selectedHighlightId={split ? selectedId : (focusId ?? null)}
               focusHighlightId={focusId}
               onHighlightClick={onHighlightClick}
+              ink={isIOS ? { enabled: inkOn, strokes, onStroke, onSample: setSample } : undefined}
             />
           ) : (
             <div className="viewer-empty">원문 불러오는 중…</div>
